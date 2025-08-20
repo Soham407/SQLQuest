@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Editor from '@monaco-editor/react';
 import { 
   Play, 
@@ -10,7 +10,8 @@ import {
   AlertCircle, 
   Lightbulb,
   Database,
-  RotateCcw
+  RotateCcw,
+  Keyboard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,8 @@ const LessonPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showHints, setShowHints] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
     const loadLesson = async () => {
@@ -55,13 +58,15 @@ const LessonPage = () => {
     loadLesson();
   }, [id, navigate, toast]);
 
-  const handleRunQuery = async () => {
+  const handleRunQuery = useCallback(async () => {
     if (!sqlQuery.trim()) {
       toast({
         title: "Empty query",
         description: "Please write a SQL query before running.",
         variant: "destructive",
       });
+      setShowError(true);
+      setTimeout(() => setShowError(false), 600);
       return;
     }
 
@@ -71,27 +76,46 @@ const LessonPage = () => {
       setQueryResult(result);
       
       if (result.success) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 800);
         toast({
-          title: "Query executed successfully!",
+          title: "✅ Query executed successfully!",
           description: `Retrieved ${result.rowCount} rows in ${result.executionTime.toFixed(3)}s`,
         });
       } else {
+        setShowError(true);
+        setTimeout(() => setShowError(false), 600);
         toast({
-          title: "Query failed",
+          title: "❌ Query failed",
           description: result.error || "Unknown error occurred",
           variant: "destructive",
         });
       }
     } catch (error) {
+      setShowError(true);
+      setTimeout(() => setShowError(false), 600);
       toast({
-        title: "Execution error",
+        title: "🚨 Execution error",
         description: "Failed to execute query. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsRunning(false);
     }
-  };
+  }, [sqlQuery, id, toast]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        handleRunQuery();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleRunQuery]);
 
   const handleReset = () => {
     setSqlQuery('-- Write your SQL query here\n');
@@ -248,19 +272,35 @@ const LessonPage = () => {
                       <RotateCcw className="w-3 h-3" />
                       Reset
                     </Button>
-                    <Button
-                      onClick={handleRunQuery}
-                      disabled={isRunning}
-                      className="flex items-center gap-2 bg-gradient-primary hover:opacity-90"
+                    <motion.div
+                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.1 }}
                     >
-                      <Play className="w-3 h-3" />
-                      {isRunning ? 'Running...' : 'Run Query'}
-                    </Button>
+                      <Button
+                        onClick={handleRunQuery}
+                        disabled={isRunning}
+                        className="flex items-center gap-2 bg-gradient-primary hover:opacity-90 relative group"
+                      >
+                        <Play className="w-3 h-3" />
+                        {isRunning ? 'Running...' : 'Run Query'}
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex items-center gap-1">
+                          <Keyboard className="w-3 h-3" />
+                          {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'} + Enter
+                        </div>
+                      </Button>
+                    </motion.div>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 p-0">
-                <div className="h-full border border-border rounded-lg overflow-hidden">
+                <motion.div 
+                  className={`h-full border border-border rounded-lg overflow-hidden transition-all duration-300 ${
+                    showError ? 'border-destructive shadow-lg animate-shake' : ''
+                  }`}
+                  animate={showError ? { x: [-10, 10, -10, 10, 0] } : {}}
+                  transition={{ duration: 0.5 }}
+                >
                   <Editor
                     height="100%"
                     defaultLanguage="sql"
@@ -279,7 +319,7 @@ const LessonPage = () => {
                       padding: { top: 16, bottom: 16 }
                     }}
                   />
-                </div>
+                </motion.div>
               </CardContent>
             </Card>
           </motion.div>
@@ -291,17 +331,42 @@ const LessonPage = () => {
             transition={{ delay: 0.2 }}
             className="lg:col-span-1"
           >
-            <Card className="h-full flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  Query Results
-                  {queryResult?.success && (
-                    <CheckCircle className="w-4 h-4 text-success" />
-                  )}
-                  {queryResult?.success === false && (
-                    <AlertCircle className="w-4 h-4 text-destructive" />
-                  )}
-                </CardTitle>
+            <motion.div
+              className={`h-full transition-all duration-500 ${
+                showSuccess ? 'ring-2 ring-success shadow-lg shadow-success/20' : ''
+              } ${
+                showError ? 'ring-2 ring-destructive shadow-lg shadow-destructive/20' : ''
+              }`}
+              animate={showSuccess ? { scale: [1, 1.01, 1] } : {}}
+              transition={{ duration: 0.4 }}
+            >
+              <Card className="h-full flex flex-col">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    Query Results
+                    <AnimatePresence>
+                      {queryResult?.success && (
+                        <motion.div
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          exit={{ scale: 0, rotate: 180 }}
+                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                        >
+                          <CheckCircle className="w-4 h-4 text-success" />
+                        </motion.div>
+                      )}
+                      {queryResult?.success === false && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                        >
+                          <AlertCircle className="w-4 h-4 text-destructive" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardTitle>
                 {queryResult && (
                   <div className="text-sm text-muted-foreground">
                     {queryResult.success ? (
@@ -314,48 +379,100 @@ const LessonPage = () => {
                   </div>
                 )}
               </CardHeader>
-              <CardContent className="flex-1 overflow-hidden">
-                {!queryResult ? (
-                  <div className="h-full flex items-center justify-center text-muted-foreground">
-                    <div className="text-center space-y-2">
-                      <Database className="w-8 h-8 mx-auto opacity-50" />
-                      <p>Run a query to see results here</p>
+                <CardContent className="flex-1 overflow-hidden">
+                  {!queryResult ? (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      <motion.div 
+                        className="text-center space-y-3"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        <motion.div
+                          animate={{ rotate: [0, 5, -5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                        >
+                          <Database className="w-12 h-12 mx-auto opacity-50" />
+                        </motion.div>
+                        <div>
+                          <p className="font-medium">Ready to execute your query</p>
+                          <p className="text-sm text-muted-foreground/70 mt-1">
+                            Results will appear here after running
+                          </p>
+                          <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground/50">
+                            <Keyboard className="w-3 h-3" />
+                            <span>Press {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'} + Enter to run</span>
+                          </div>
+                        </div>
+                      </motion.div>
                     </div>
-                  </div>
-                ) : queryResult.success ? (
-                  <div className="h-full overflow-auto custom-scrollbar">
-                    <table className="result-table">
-                      <thead>
-                        <tr>
-                          {queryResult.columns.map((column, index) => (
-                            <th key={index}>{column}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {queryResult.rows.map((row, rowIndex) => (
-                          <tr key={rowIndex}>
-                            {row.map((cell, cellIndex) => (
-                              <td key={cellIndex}>{cell}</td>
+                  ) : queryResult.success ? (
+                    <motion.div 
+                      className="h-full overflow-auto custom-scrollbar"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <table className="result-table">
+                        <thead>
+                          <tr>
+                            {queryResult.columns.map((column, index) => (
+                              <motion.th 
+                                key={index}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                              >
+                                {column}
+                              </motion.th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center space-y-2 p-4">
-                      <AlertCircle className="w-8 h-8 mx-auto text-destructive" />
-                      <p className="text-sm font-medium">Query Error</p>
-                      <p className="text-xs text-muted-foreground bg-destructive/10 p-2 rounded border">
-                        {queryResult.error}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                        </thead>
+                        <tbody>
+                          {queryResult.rows.map((row, rowIndex) => (
+                            <motion.tr 
+                              key={rowIndex}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: (rowIndex + queryResult.columns.length) * 0.02 }}
+                            >
+                              {row.map((cell, cellIndex) => (
+                                <td key={cellIndex}>{cell}</td>
+                              ))}
+                            </motion.tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </motion.div>
+                  ) : (
+                    <motion.div 
+                      className="h-full flex items-center justify-center"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="text-center space-y-3 p-4">
+                        <motion.div
+                          animate={{ rotate: [0, -10, 10, 0] }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <AlertCircle className="w-10 h-10 mx-auto text-destructive" />
+                        </motion.div>
+                        <p className="text-sm font-medium text-destructive">Query Error</p>
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="text-xs text-muted-foreground bg-destructive/10 p-3 rounded border border-destructive/20 max-w-sm"
+                        >
+                          {queryResult.error}
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </motion.div>
         </div>
       </div>

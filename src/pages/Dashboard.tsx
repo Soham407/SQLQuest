@@ -54,14 +54,87 @@ const Dashboard = () => {
 
   const completionPercentage = (progress.completedLessons.length / lessons.length) * 100;
 
+  const SkeletonCard = () => (
+    <Card className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border-border/50 backdrop-blur-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-5 w-32 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-24 bg-muted/60 animate-pulse rounded" />
+          </div>
+          <div className="h-6 w-16 bg-muted animate-pulse rounded-full" />
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div className="h-3 w-full bg-muted/80 animate-pulse rounded" />
+          <div className="h-3 w-4/5 bg-muted/60 animate-pulse rounded" />
+          <div className="h-3 w-3/4 bg-muted/40 animate-pulse rounded" />
+        </div>
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/30">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+            <div className="h-3 w-12 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="h-8 w-20 bg-muted animate-pulse rounded" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto animate-float">
-            <Database className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-background p-6">
+        <div className="container mx-auto max-w-7xl">
+          {/* Header Skeleton */}
+          <header className="mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center animate-pulse">
+                  <Database className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="h-7 w-48 bg-muted animate-pulse rounded mb-2" />
+                  <div className="h-4 w-64 bg-muted/60 animate-pulse rounded" />
+                </div>
+              </div>
+              <div className="w-10 h-10 bg-muted animate-pulse rounded-full" />
+            </div>
+          </header>
+
+          {/* Stats Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="border-border/50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-muted animate-pulse rounded-lg" />
+                    <div>
+                      <div className="h-4 w-20 bg-muted animate-pulse rounded mb-1" />
+                      <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
           </div>
-          <p className="text-muted-foreground">Loading your SQL journey...</p>
+
+          {/* Lessons Section */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="h-8 w-48 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-4 w-64 bg-muted/60 animate-pulse rounded" />
+              </div>
+              <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+            </div>
+
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-6`}>
+              {[...Array(6)].map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -197,8 +270,13 @@ const Dashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
+                  whileHover={{ 
+                    scale: 1.02,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <Card className="lesson-card h-full cursor-pointer group relative overflow-hidden"
+                  <Card className="lesson-card h-full cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 backdrop-blur-sm"
                         onClick={() => navigate(`/lessons/${lesson.id}`)}>
                     {isCompleted && (
                       <div className="absolute top-3 right-3 w-6 h-6 bg-success rounded-full flex items-center justify-center">
