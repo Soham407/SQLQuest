@@ -2,95 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* SQL Fiddle Design System - Modern dark-first coding platform
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors - Light mode (fallback) */
+    --background: 210 11% 96%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* SQL Fiddle brand colors */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 70%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 215 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 14% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 212 97% 87%;
+    --accent-foreground: 215 25% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.75rem;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Code editor colors */
+    --editor-background: 220 13% 18%;
+    --editor-foreground: 220 14% 71%;
+    --editor-selection: 217 91% 60%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 13% 18%), hsl(215 20% 15%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%), hsl(230 91% 70%));
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(217 91% 60% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(217 91% 60% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(217 91% 60% / 0.1);
+    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.3);
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animations */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode - Primary theme */
+    --background: 220 13% 9%;
+    --foreground: 220 14% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 20% 11%;
+    --card-foreground: 220 14% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 20% 11%;
+    --popover-foreground: 220 14% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Enhanced dark mode colors */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 70%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 20% 15%;
+    --secondary-foreground: 220 14% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 20% 14%;
+    --muted-foreground: 220 14% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 20% 18%;
+    --accent-foreground: 220 14% 95%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 76% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 215 20% 18%;
+    --input: 215 20% 15%;
+    --ring: 217 91% 60%;
+
+    /* Enhanced code editor colors for dark theme */
+    --editor-background: 220 13% 8%;
+    --editor-foreground: 220 14% 85%;
+    --editor-selection: 217 91% 60% / 0.3;
+
+    /* Enhanced gradients for dark mode */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(230 91% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(215 20% 11%), hsl(215 20% 18%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%), hsl(230 91% 70%), hsl(245 91% 80%));
+
+    /* Enhanced shadows for dark mode */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.25);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.35);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.45);
+    --shadow-glow: 0 0 30px hsl(217 91% 60% / 0.4);
   }
 }
 
@@ -100,6 +131,135 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Monaco Editor styling */
+  .monaco-editor {
+    @apply rounded-lg;
+  }
+
+  /* Custom scrollbars */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-muted rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full hover:bg-accent;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    @apply animate-[fade-in_0.3s_ease-out];
+  }
+
+  .animate-scale-in {
+    @apply animate-[scale-in_0.2s_ease-out];
+  }
+
+  .animate-slide-up {
+    @apply animate-[slide-up_0.3s_ease-out];
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)];
+  }
+
+  /* Text gradients */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent;
+  }
+
+  /* Code syntax highlighting */
+  .sql-keyword {
+    @apply text-blue-400 font-semibold;
+  }
+
+  .sql-string {
+    @apply text-green-400;
+  }
+
+  .sql-number {
+    @apply text-orange-400;
+  }
+
+  .sql-comment {
+    @apply text-gray-500 italic;
+  }
+}
+
+@layer components {
+  /* SQL Fiddle specific component styles */
+  .lesson-card {
+    @apply bg-card border border-border rounded-lg p-6 hover-lift hover-glow;
+    @apply transition-all duration-300;
+  }
+
+  .code-panel {
+    @apply bg-card border border-border rounded-lg;
+    @apply shadow-md;
+  }
+
+  .result-table {
+    @apply w-full border-collapse border border-border rounded-lg overflow-hidden;
+  }
+
+  .result-table th {
+    @apply bg-muted px-4 py-2 text-left font-semibold text-muted-foreground border-b border-border;
+  }
+
+  .result-table td {
+    @apply px-4 py-2 border-b border-border;
+  }
+
+  .result-table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .result-table tr:hover {
+    @apply bg-muted/50;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
