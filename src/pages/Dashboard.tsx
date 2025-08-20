@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Database, User, Trophy, Clock, Star, ArrowRight, Code, Zap } from 'lucide-react';
+import { Database, User, Trophy, Clock, Star, ArrowRight, Code, Zap, Grid3X3, Grid2X2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getLessons, getUserProgress, type Lesson } from '@/lib/api';
 
 const Dashboard = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState({ completedLessons: [], totalScore: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [gridLayout, setGridLayout] = useState('grid-4');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +41,14 @@ const Dashboard = () => {
       case 'Intermediate': return 'bg-warning/20 text-warning border-warning/30';
       case 'Advanced': return 'bg-destructive/20 text-destructive border-destructive/30';
       default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getGridCols = (layout: string) => {
+    switch (layout) {
+      case 'grid-4': return 'lg:grid-cols-4';
+      case 'grid-6': return 'lg:grid-cols-6';
+      default: return 'lg:grid-cols-3';
     }
   };
 
@@ -153,9 +163,31 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold">Available Lessons</h2>
               <p className="text-muted-foreground">Continue your SQL learning journey</p>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">View Options:</span>
+              <Select value={gridLayout} onValueChange={setGridLayout}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grid-4">
+                    <div className="flex items-center gap-2">
+                      <Grid2X2 className="w-4 h-4" />
+                      4-Grid View
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="grid-6">
+                    <div className="flex items-center gap-2">
+                      <Grid3X3 className="w-4 h-4" />
+                      6-Grid View
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-6`}>
             {lessons.map((lesson, index) => {
               const isCompleted = progress.completedLessons.includes(lesson.id);
               
