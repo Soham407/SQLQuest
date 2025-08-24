@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -120,8 +121,8 @@ const PillNav = ({
               ref={(el) => (itemRefs.current[index] = el)}
               onMouseEnter={() => handleItemHover(index)}
             >
-              <a
-                href={item.href}
+              <Link
+                to={item.href}
                 className={cn(
                   "relative z-10 px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200",
                   activeIndex === index
@@ -133,7 +134,7 @@ const PillNav = ({
                 }}
               >
                 {item.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
