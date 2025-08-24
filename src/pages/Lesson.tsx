@@ -72,7 +72,7 @@ const LessonPage = () => {
 
     setIsRunning(true);
     try {
-      const result = await executeQuery(sqlQuery, id);
+      const result = await executeQuery(sqlQuery);
       setQueryResult(result);
       
       if (result.success) {
@@ -236,14 +236,18 @@ const LessonPage = () => {
                       animate={{ opacity: 1, height: 'auto' }}
                       className="mt-3 space-y-2"
                     >
-                      {lesson.hints.map((hint, index) => (
-                        <div key={index} className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
-                          <div className="flex items-start gap-2">
-                            <Lightbulb className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
-                            <span>{hint}</span>
-                          </div>
+                      <div className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
+                          <span>Try using SELECT statements to query the sample tables: employees and departments</span>
                         </div>
-                      ))}
+                      </div>
+                      <div className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
+                          <span>Use JOIN operations to combine data from multiple tables</span>
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </div>
