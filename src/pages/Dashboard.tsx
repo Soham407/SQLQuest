@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Database, User, Trophy, Clock, Star, ArrowRight, Code, Zap, Grid3X3, Grid2X2 } from 'lucide-react';
+import { Database, User, Trophy, Clock, Star, ArrowRight, Code, Zap, Grid3X3, Grid2X2, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getLessons, getUserProgress, type Lesson } from '@/lib/api';
+import { getLessons, getUserProgress, type Lesson, logout } from '@/lib/api';
+import AnimatedList from '@/components/AnimatedList';
 
 const Dashboard = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState({ completedLessons: [], totalScore: 0 });
   const [isLoading, setIsLoading] = useState(true);
-  const [gridLayout, setGridLayout] = useState('grid-4');
+  const [gridLayout, setGridLayout] = useState('list');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +49,7 @@ const Dashboard = () => {
     switch (layout) {
       case 'grid-4': return 'lg:grid-cols-4';
       case 'grid-6': return 'lg:grid-cols-6';
+      case 'list': return 'grid-cols-1';
       default: return 'lg:grid-cols-3';
     }
   };
@@ -168,7 +170,10 @@ const Dashboard = () => {
               <User className="w-4 h-4" />
               <span>SQL Learner</span>
             </div>
-            <Button variant="outline" onClick={() => navigate('/login')}>
+            <Button variant="outline" onClick={async () => {
+              await logout();
+              navigate('/login');
+            }}>
               Sign Out
             </Button>
           </motion.div>
@@ -243,6 +248,12 @@ const Dashboard = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="list">
+                    <div className="flex items-center gap-2">
+                      <List className="w-4 h-4" />
+                      List View
+                    </div>
+                  </SelectItem>
                   <SelectItem value="grid-4">
                     <div className="flex items-center gap-2">
                       <Grid2X2 className="w-4 h-4" />
@@ -260,77 +271,96 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-6`}>
-            {lessons.map((lesson, index) => {
-              const isCompleted = progress.completedLessons.includes(lesson.id);
-              
-              return (
-                <motion.div
-                  key={lesson.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    transition: { duration: 0.2 }
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Card className="lesson-card h-full cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 backdrop-blur-sm"
-                        onClick={() => navigate(`/lessons/${lesson.id}`)}>
-                    {isCompleted && (
-                      <div className="absolute top-3 right-3 w-6 h-6 bg-success rounded-full flex items-center justify-center">
-                        <Trophy className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                    
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                            {lesson.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
-                              {lesson.difficulty}
-                            </Badge>
-                            <Badge variant="secondary">
-                              {lesson.category}
-                            </Badge>
+          {gridLayout === 'list' ? (
+            <AnimatedList
+              items={lessons.map(lesson => ({
+                ...lesson,
+                isCompleted: progress.completedLessons.includes(lesson.id),
+                isLocked: false
+              }))}
+              onItemSelect={(lesson, index) => {
+                console.log('Selected lesson:', lesson, 'at index:', index);
+                navigate(`/lessons/${lesson.id}`);
+              }}
+              showGradients={true}
+              enableArrowNavigation={true}
+              displayScrollbar={true}
+            />
+          ) : (
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-6`}>
+              {lessons.map((lesson, index) => {
+                const isCompleted = progress.completedLessons.includes(lesson.id);
+                
+                return (
+                  <motion.div
+                    key={lesson.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      transition: { duration: 0.2 }
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Card className="lesson-card h-full cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 backdrop-blur-sm"
+                          onClick={() => navigate(`/lessons/${lesson.id}`)}>
+                      {isCompleted && (
+                        <div className="absolute top-3 right-3 w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                          <Trophy className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2">
+                            <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                              {lesson.title}
+                            </CardTitle>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
+                                {lesson.difficulty}
+                              </Badge>
+                              <Badge variant="secondary">
+                                {lesson.category}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <CardDescription className="text-sm leading-relaxed">
-                        {lesson.description}
-                      </CardDescription>
-                    </CardHeader>
-                    
-                    <CardContent>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{lesson.estimatedTime} min</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Code className="w-3 h-3" />
-                          <span>Hands-on</span>
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        variant="outline" 
-                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200"
-                      >
-                        {isCompleted ? 'Review Lesson' : 'Start Lesson'}
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+                                             <CardDescription className="text-sm leading-relaxed">
+                         {lesson.description}
+                       </CardDescription>
+                     </CardHeader>
+                     
+                     <CardContent>
+                       <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                         <div className="flex items-center gap-1">
+                           <Clock className="w-3 h-3" />
+                           <span>{lesson.estimatedTime} min</span>
+                         </div>
+                         <div className="flex items-center gap-1">
+                           <Code className="w-3 h-3" />
+                           <span>Hands-on</span>
+                         </div>
+                       </div>
+                       
+                       <Button 
+                         variant="outline" 
+                         className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200"
+                       >
+                         {isCompleted ? 'Review Lesson' : 'Start Lesson'}
+                         <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                       </Button>
+                     </CardContent>
+                   </Card>
+                 </motion.div>
+               );
+             })}
+           </div>
+          )}
         </motion.div>
+
+
 
         {/* Quick Start Section */}
         <motion.div

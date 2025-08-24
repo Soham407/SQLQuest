@@ -68,6 +68,11 @@ export async function login(email: string, password: string): Promise<any> {
   return account.get();
 }
 
+export async function signup(email: string, password: string, name: string): Promise<any> {
+  // Creates a new user account.
+  return account.create(ID.unique(), email, password, name);
+}
+
 export async function getCurrentUser(): Promise<any | null> {
   try {
     return await account.get();

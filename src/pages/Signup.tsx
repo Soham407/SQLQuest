@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Database, Zap, Code } from 'lucide-react';
+import { Database, Zap, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { login } from '@/lib/api';
+import { signup, login } from '@/lib/api';
 
-const Login = () => {
+const Signup = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -20,26 +20,22 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      const user = await login(email, password);
+      // 1. Create the account
+      await signup(email, password, name);
+      // 2. Log the new user in
+      await login(email, password);
       toast({
-        title: "Welcome back!",
-        description: `Hello ${user.name}, ready to master SQL?`,
+        title: 'Welcome to SQL Fiddle!',
+        description: 'Your account has been created and you are now logged in.',
       });
       navigate('/dashboard');
     } catch (error: unknown) {
-      let errMsg = 'Please check your credentials and try again.';
-      if (error instanceof Error) {
-        errMsg = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
-        errMsg = (error as { message: string }).message;
-      }
-      console.error('Login error:', error);
+      const errMsg = error instanceof Error ? error.message : 'An error occurred. Please try again.';
       toast({
-        title: "Login failed",
+        title: 'Signup failed',
         description: errMsg,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -49,7 +45,6 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
-        
         {/* Left side - Branding */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -95,7 +90,7 @@ const Login = () => {
           </div>
         </motion.div>
 
-        {/* Right side - Login form */}
+        {/* Right side - Signup form */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -104,13 +99,25 @@ const Login = () => {
         >
           <Card className="shadow-xl border-border bg-card/80 backdrop-blur-sm">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+              <CardTitle className="text-2xl font-bold text-center">Create your account</CardTitle>
               <CardDescription className="text-center">
-                Enter your credentials to continue your SQL journey
+                Sign up to start your SQL learning journey
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -125,45 +132,28 @@ const Login = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  />
                 </div>
                 <Button
                   type="submit"
                   className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 font-semibold"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? 'Signing up...' : 'Sign up'}
                 </Button>
               </form>
-              
               <div className="mt-6 text-center text-sm text-muted-foreground">
-                <p>Demo credentials: any email and password will work</p>
-                <p className="mt-2">
-                  Don&apos;t have an account?{' '}
-                  <a href="/signup" className="text-primary font-semibold hover:underline">Sign up</a>
+                <p>
+                  Already have an account?{' '}
+                  <a href="/login" className="text-primary font-semibold hover:underline">Log in</a>
                 </p>
               </div>
             </CardContent>
@@ -174,4 +164,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
