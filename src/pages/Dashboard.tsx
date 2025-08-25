@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getLessons, getUserProgress, type Lesson, logout } from '@/lib/api';
 import AnimatedList from '@/components/AnimatedList';
+import { useAuth } from '@/lib/useAuth';
 
 const Dashboard = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [gridLayout, setGridLayout] = useState('list');
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     const loadData = async () => {
@@ -172,6 +174,7 @@ const Dashboard = () => {
             </div>
             <Button variant="outline" onClick={async () => {
               await logout();
+              await refreshUser();
               navigate('/login');
             }}>
               Sign Out

@@ -10,52 +10,61 @@ import Dashboard from "./pages/Dashboard";
 import Lesson from "./pages/Lesson";
 import NotFound from "./pages/NotFound";
 import Signup from "./pages/Signup";
+import { AuthProvider } from "@/lib/auth";
+import { useAuth } from "@/lib/useAuth";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
+const MainContent = () => {
   const location = useLocation();
-  
+  const { user, loading } = useAuth();
+  const navItems = [
+    { label: "Home", href: "/" },
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Login", href: "/login" },
+    { label: "Sign Up", href: "/signup" },
+  ];
+
+  // Hide Login/Sign Up if logged in
+  const filteredNavItems = user
+    ? navItems.filter(
+        (item) => item.label !== "Login" && item.label !== "Sign Up"
+      )
+    : navItems;
+
   return (
-    <div className="min-h-screen bg-background">
-      <Toaster />
-      <Sonner />
-      
-      {/* Navigation */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3">
-          <PillNav
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Dashboard', href: '/dashboard' },
-              { label: 'Login', href: '/login' },
-              { label: 'Sign Up', href: '/signup' }
-            ]}
-            activeHref={location.pathname}
-            className="justify-center"
-          />
-        </div>
-      </header>
-      
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/lessons/:id" element={<Lesson />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
+    <>
+      <main>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/lessons/:id" element={<Lesson />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <PillNav
+        items={filteredNavItems}
+        activeHref={location.pathname}
+        className="justify-center"
+      />
+    </>
   );
 };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <div className="min-h-screen bg-background">
+        <AuthProvider>
+          <BrowserRouter>
+            <MainContent />
+          </BrowserRouter>
+        </AuthProvider>
+        <Toaster />
+        <Sonner />
+      </div>
     </TooltipProvider>
   </QueryClientProvider>
 );

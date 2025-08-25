@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Client, Account, Databases, ID, Query } from 'appwrite';
 import sql from 'sql.js';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 // --- INTERFACES (These should match your Appwrite Collection attributes) ---
 export interface User {
