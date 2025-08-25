@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Database, Play, BookOpen, Users, Star, ArrowRight, Code, Zap, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import TrueFocus from '@/components/TrueFocus';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -51,14 +52,20 @@ const Index = () => {
             >
               <Database className="w-8 h-8 text-white" />
             </motion.div>
-            <motion.h1
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-5xl md:text-6xl font-bold text-gradient"
             >
-              SQL Quest Interactive
-            </motion.h1>
+              <TrueFocus 
+                sentence="SQL Quest Interactive"
+                manualMode={false}
+                blurAmount={3}
+                borderColor="hsl(var(--primary))"
+                animationDuration={1.5}
+                pauseBetweenAnimations={2}
+              />
+            </motion.div>
           </div>
           
           <motion.p
