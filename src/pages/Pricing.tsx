@@ -64,53 +64,82 @@ const Pricing = () => {
     }
   ];
 
-  const handlePayment = (plan: typeof plans[0]) => {
+  const handlePayment = async (plan: typeof plans[0]) => {
     if (plan.price === 0) {
       toast.success("Welcome to SQL Quest Interactive Free!");
       return;
     }
 
-    // Razorpay configuration
-    const options = {
-      key: "YOUR_RAZORPAY_KEY_ID", // Replace with your actual key
-      amount: plan.razorpayAmount, // Amount in paise
-      currency: "INR",
-      name: "SQL Quest Interactive",
-      description: `${plan.name} Plan Subscription`,
-      image: "/favicon.ico", // Your logo
-      handler: function (response: any) {
-        // Payment successful
-        toast.success("Payment successful! Welcome to " + plan.name + "!");
-        console.log("Payment ID:", response.razorpay_payment_id);
-        console.log("Order ID:", response.razorpay_order_id);
-        console.log("Signature:", response.razorpay_signature);
-        
-        // Here you would typically:
-        // 1. Send payment details to your backend for verification
-        // 2. Update user's subscription status
-        // 3. Redirect to dashboard or success page
-      },
-      prefill: {
-        name: "John Doe", // You can get this from user context
-        email: "john@example.com", // You can get this from user context
-        contact: "9999999999" // You can get this from user context
-      },
-      notes: {
-        plan: plan.name,
-        features: plan.features.join(", ")
-      },
-      theme: {
-        color: "hsl(var(--primary))"
-      },
-      modal: {
-        ondismiss: function() {
-          toast.error("Payment cancelled");
-        }
+    try {
+      const createResp = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planName: plan.name })
+      });
+      if (!createResp.ok) {
+        const errText = await createResp.text();
+        toast.error("Failed to start payment. Try again.");
+        console.error("Create order failed:", errText);
+        return;
       }
-    };
+      const order = await createResp.json();
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency || "INR",
+        name: "SQL Quest Interactive",
+        description: `${plan.name} Plan Subscription`,
+        image: "/favicon.ico",
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            const verifyResp = await fetch("/api/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            const verifyJson = await verifyResp.json();
+            if (verifyResp.ok && verifyJson.valid) {
+              toast.success("Payment successful! Welcome to " + plan.name + "!");
+            } else {
+              toast.error("Payment verification failed");
+              console.error("Verification error:", verifyJson);
+            }
+          } catch (e) {
+            toast.error("Could not verify payment");
+            console.error(e);
+          }
+        },
+        prefill: {
+          name: "John Doe",
+          email: "john@example.com",
+          contact: "9999999999"
+        },
+        notes: {
+          plan: plan.name,
+          features: plan.features.join(", ")
+        },
+        theme: {
+          color: "hsl(var(--primary))"
+        },
+        modal: {
+          ondismiss: function() {
+            toast.error("Payment cancelled");
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      toast.error("Something went wrong. Please try again.");
+      console.error(e);
+    }
   };
 
   return (
