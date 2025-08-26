@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Lesson from "./pages/Lesson";
 import NotFound from "./pages/NotFound";
 import Signup from "./pages/Signup";
+import Pricing from "./pages/Pricing";
 import { AuthProvider } from "@/lib/auth";
 import { useAuth } from "@/lib/useAuth";
 
@@ -20,6 +21,7 @@ const MainContent = () => {
   const { user, loading } = useAuth();
   const navItems = [
     { label: "Home", href: "/" },
+    { label: "Pricing", href: "/pricing" },
     { label: "Dashboard", href: "/dashboard" },
     { label: "Login", href: "/login" },
     { label: "Sign Up", href: "/signup" },
@@ -37,6 +39,7 @@ const MainContent = () => {
       <main>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
