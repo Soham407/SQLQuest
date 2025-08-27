@@ -1,12 +1,52 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Check, Star, Zap, Crown } from "lucide-react";
 import { toast } from "sonner";
 
+// Razorpay response interface
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+// Razorpay options interface
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  notes: {
+    plan: string;
+    features: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+}
+
+// Razorpay instance interface
+interface RazorpayInstance {
+  open: () => void;
+}
+
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
   }
 }
 
@@ -64,6 +104,13 @@ const Pricing = () => {
     }
   ];
 
+  // Create a master list of all unique features
+  const allFeatures = Array.from(
+    new Set(
+      plans.flatMap(plan => plan.features)
+    )
+  );
+
   const handlePayment = async (plan: typeof plans[0]) => {
     if (plan.price === 0) {
       toast.success("Welcome to SQL Quest Interactive Free!");
@@ -92,7 +139,7 @@ const Pricing = () => {
         description: `${plan.name} Plan Subscription`,
         image: "/favicon.ico",
         order_id: order.id,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           try {
             const verifyResp = await fetch("/api/verify-payment", {
               method: "POST",
@@ -202,6 +249,52 @@ const Pricing = () => {
               </CardFooter>
             </Card>
           ))}
+        </div>
+
+        {/* Feature Comparison Table */}
+        <div className="mt-16">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center">Feature Comparison</CardTitle>
+              <CardDescription className="text-center">
+                Compare all features across our plans at a glance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Feature</TableHead>
+                    <TableHead className="text-center font-semibold">Free</TableHead>
+                    <TableHead className="text-center font-semibold">Pro</TableHead>
+                    <TableHead className="text-center font-semibold">Pro Plus</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allFeatures.map((feature) => (
+                    <TableRow key={feature}>
+                      <TableCell className="font-semibold">{feature}</TableCell>
+                      <TableCell className="text-center">
+                        {plans[0].features.includes(feature) && (
+                          <Check className="h-5 w-5 text-primary mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {plans[1].features.includes(feature) && (
+                          <Check className="h-5 w-5 text-primary mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {plans[2].features.includes(feature) && (
+                          <Check className="h-5 w-5 text-primary mx-auto" />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="mt-16 text-center">
