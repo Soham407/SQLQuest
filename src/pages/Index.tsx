@@ -85,19 +85,11 @@ const Index = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               className="bg-gradient-primary hover:opacity-90 text-lg px-8 py-3 h-auto font-semibold"
             >
               Start Learning
               <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/dashboard')}
-              className="text-lg px-8 py-3 h-auto font-semibold border-border hover:bg-accent"
-            >
-              View Demo
-              <Play className="w-5 h-5 ml-2" />
             </Button>
           </motion.div>
 
@@ -185,10 +177,10 @@ const Index = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
                   <Button
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate('/signup')}
                     className="bg-gradient-primary hover:opacity-90 text-lg px-8 py-3 h-auto font-semibold"
                   >
-                    Get Started Free
+                    Create a Free Account
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                   <Button
@@ -196,7 +188,7 @@ const Index = () => {
                     onClick={() => navigate('/dashboard')}
                     className="text-lg px-8 py-3 h-auto font-semibold"
                   >
-                    Try Demo
+                    Explore the Dashboard
                   </Button>
                 </div>
               </div>

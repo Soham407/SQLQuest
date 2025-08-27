@@ -7,12 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { getLessons, getUserProgress, type Lesson, logout } from '@/lib/api';
 import AnimatedList from '@/components/AnimatedList';
 import { useAuth } from '@/lib/useAuth';
 
+
 const Dashboard = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [groupedLessons, setGroupedLessons] = useState<Record<string, Lesson[]>>({});
   const [progress, setProgress] = useState({ completedLessons: [], totalScore: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +43,22 @@ const Dashboard = () => {
 
     loadData();
   }, []);
+
+  // Group lessons by category
+  useEffect(() => {
+    if (lessons.length > 0) {
+      const grouped = lessons.reduce((acc, lesson) => {
+        const category = lesson.category || 'Uncategorized';
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(lesson);
+        return acc;
+      }, {} as Record<string, Lesson[]>);
+      
+      setGroupedLessons(grouped);
+    }
+  }, [lessons]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -175,6 +194,9 @@ const Dashboard = () => {
               <User className="w-4 h-4" />
               <span>SQL Learner</span>
             </div>
+            <Button variant="outline" onClick={() => navigate('/profile')}>
+              Profile
+            </Button>
             <Button variant="outline" onClick={async () => {
               await logout();
               await refreshUser();
@@ -193,7 +215,7 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <Card className="hover-lift">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Progress</CardTitle>
@@ -244,8 +266,8 @@ const Dashboard = () => {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold">Available Lessons</h2>
-              <p className="text-muted-foreground">Continue your SQL learning journey</p>
+              <h2 className="text-2xl font-bold">Learning Paths</h2>
+              <p className="text-muted-foreground">Organized by category for structured learning</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">View Options:</span>
@@ -298,93 +320,134 @@ const Dashboard = () => {
                 <p className="text-muted-foreground">Lessons will appear here once they're added to the system.</p>
               </div>
             </div>
-          ) : gridLayout === 'list' ? (
-            <AnimatedList
-              items={lessons.map(lesson => ({
-                ...lesson,
-                isCompleted: progress.completedLessons.includes(lesson.id),
-                isLocked: false
-              }))}
-              onItemSelect={(lesson, index) => {
-                console.log('Selected lesson:', lesson, 'at index:', index);
-                navigate(`/lessons/${lesson.id}`);
-              }}
-              showGradients={true}
-              enableArrowNavigation={true}
-              displayScrollbar={true}
-              maxHeight="32rem"
-            />
+          ) : Object.keys(groupedLessons).length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-muted-foreground text-2xl">📚</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No Learning Paths Available</h3>
+                <p className="text-muted-foreground">Learning paths will appear here once lessons are organized by category.</p>
+              </div>
+            </div>
           ) : (
-            <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-6`}>
-              {lessons.map((lesson, index) => {
-                const isCompleted = progress.completedLessons.includes(lesson.id);
+            <Accordion type="multiple" className="space-y-4">
+              {Object.keys(groupedLessons).map((category, categoryIndex) => {
+                const categoryLessons = groupedLessons[category];
+                const completedInCategory = categoryLessons.filter(lesson => 
+                  progress.completedLessons.includes(lesson.id)
+                ).length;
                 
                 return (
-                  <motion.div
-                    key={lesson.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ 
-                      scale: 1.02,
-                      transition: { duration: 0.2 }
-                    }}
-                    whileTap={{ scale: 0.98 }}
+                  <AccordionItem 
+                    key={category} 
+                    value={category}
+                    className="border border-border/50 rounded-lg bg-card/50 backdrop-blur-sm"
                   >
-                    <Card className="lesson-card h-full cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 backdrop-blur-sm"
-                          onClick={() => navigate(`/lessons/${lesson.id}`)}>
-                      {isCompleted && (
-                        <div className="absolute top-3 right-3 w-6 h-6 bg-success rounded-full flex items-center justify-center">
-                          <Trophy className="w-3 h-3 text-white" />
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-semibold">{category}</h3>
+                          <Badge variant="secondary" className="text-xs">
+                            {completedInCategory}/{categoryLessons.length} completed
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{categoryLessons.length} lessons</span>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6">
+                      {gridLayout === 'list' ? (
+                        <AnimatedList
+                          items={categoryLessons.map(lesson => ({
+                            ...lesson,
+                            isCompleted: progress.completedLessons.includes(lesson.id),
+                            isLocked: false
+                          }))}
+                          onItemSelect={(lesson, index) => {
+                            console.log('Selected lesson:', lesson, 'at index:', index);
+                            navigate(`/lessons/${lesson.id}`);
+                          }}
+                          showGradients={true}
+                          enableArrowNavigation={true}
+                          displayScrollbar={true}
+                          maxHeight="24rem"
+                        />
+                      ) : (
+                        <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-4 mt-4`}>
+                          {categoryLessons.map((lesson, index) => {
+                            const isCompleted = progress.completedLessons.includes(lesson.id);
+                            
+                            return (
+                              <motion.div
+                                key={lesson.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ 
+                                  scale: 1.02,
+                                  transition: { duration: 0.2 }
+                                }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                <Card className="lesson-card h-full cursor-pointer group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 backdrop-blur-sm"
+                                      onClick={() => navigate(`/lessons/${lesson.id}`)}>
+                                  {isCompleted && (
+                                    <div className="absolute top-3 right-3 w-6 h-6 bg-success rounded-full flex items-center justify-center">
+                                      <Trophy className="w-3 h-3 text-white" />
+                                    </div>
+                                  )}
+                                  
+                                  <CardHeader>
+                                    <div className="flex items-start justify-between">
+                                      <div className="space-y-2">
+                                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                                          {lesson.title}
+                                        </CardTitle>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
+                                            {lesson.difficulty}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <CardDescription className="text-sm leading-relaxed">
+                                      {lesson.description}
+                                    </CardDescription>
+                                  </CardHeader>
+                                  
+                                  <CardContent>
+                                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        <span>{lesson.estimatedTime} min</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Code className="w-3 h-3" />
+                                        <span>Hands-on</span>
+                                      </div>
+                                    </div>
+                                    
+                                    <Button 
+                                      variant="outline" 
+                                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200"
+                                    >
+                                      {isCompleted ? 'Review Lesson' : 'Start Lesson'}
+                                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                  </CardContent>
+                                </Card>
+                              </motion.div>
+                            );
+                          })}
                         </div>
                       )}
-                      
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2">
-                            <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                              {lesson.title}
-                            </CardTitle>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
-                                {lesson.difficulty}
-                              </Badge>
-                              <Badge variant="secondary">
-                                {lesson.category}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                                             <CardDescription className="text-sm leading-relaxed">
-                         {lesson.description}
-                       </CardDescription>
-                     </CardHeader>
-                     
-                     <CardContent>
-                       <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                         <div className="flex items-center gap-1">
-                           <Clock className="w-3 h-3" />
-                           <span>{lesson.estimatedTime} min</span>
-                         </div>
-                         <div className="flex items-center gap-1">
-                           <Code className="w-3 h-3" />
-                           <span>Hands-on</span>
-                         </div>
-                       </div>
-                       
-                       <Button 
-                         variant="outline" 
-                         className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200"
-                       >
-                         {isCompleted ? 'Review Lesson' : 'Start Lesson'}
-                         <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                       </Button>
-                     </CardContent>
-                   </Card>
-                 </motion.div>
-               );
-             })}
-           </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           )}
         </motion.div>
 
