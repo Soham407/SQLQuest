@@ -1,3 +1,4 @@
+/* Tailwind CSS - VS Code may show warnings for @tailwind and @apply directives, but these are valid in Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -173,6 +174,33 @@ All colors MUST be HSL.
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* AnimatedList card hover fixes */
+  .animated-list-card {
+    @apply relative z-10;
+    transform: translateZ(0);
+  }
+
+  .animated-list-card:hover {
+    @apply z-20;
+    transform: translateZ(0) scale(1.01);
+  }
+
+  .animated-list-card.selected {
+    @apply z-20;
+  }
+
+  /* Ensure proper stacking context */
+  .animated-list-container {
+    @apply relative;
+    transform: translateZ(0);
+  }
+
+  /* Card container with proper overflow handling */
+  .animated-list-card-container {
+    @apply relative;
+    overflow: visible;
   }
 
   /* Line clamp utilities */

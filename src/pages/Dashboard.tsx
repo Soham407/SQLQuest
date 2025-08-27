@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState({ completedLessons: [], totalScore: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [gridLayout, setGridLayout] = useState('list');
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
@@ -22,6 +23,7 @@ const Dashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setError(null);
         const [lessonsData, progressData] = await Promise.all([
           getLessons(),
           getUserProgress()
@@ -30,6 +32,7 @@ const Dashboard = () => {
         setProgress(progressData);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
+        setError('Failed to load lessons. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -183,7 +186,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-8">
         {/* Progress Overview */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -274,7 +277,28 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {gridLayout === 'list' ? (
+          {error ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-red-600 dark:text-red-400 text-2xl">⚠️</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2 text-red-600 dark:text-red-400">Error Loading Lessons</h3>
+                <p className="text-muted-foreground mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
+              </div>
+            </div>
+          ) : lessons.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-muted-foreground text-2xl">📚</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No Lessons Available</h3>
+                <p className="text-muted-foreground">Lessons will appear here once they're added to the system.</p>
+              </div>
+            </div>
+          ) : gridLayout === 'list' ? (
             <AnimatedList
               items={lessons.map(lesson => ({
                 ...lesson,
@@ -288,6 +312,7 @@ const Dashboard = () => {
               showGradients={true}
               enableArrowNavigation={true}
               displayScrollbar={true}
+              maxHeight="32rem"
             />
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 ${getGridCols(gridLayout)} gap-6`}>

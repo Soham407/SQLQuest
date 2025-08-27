@@ -109,7 +109,11 @@ export async function getLessonById(id: string): Promise<Lesson> {
 
 // USER PROGRESS (temporary placeholder – replace with real backend logic later)
 export async function getUserProgress(): Promise<{ completedLessons: string[]; totalScore: number }> {
-  return { completedLessons: [], totalScore: 0 };
+  // Temporary sample data - replace with real backend integration later
+  return { 
+    completedLessons: ['1', '2'], // Sample completed lesson IDs
+    totalScore: 850 
+  };
 }
 
 // SQL EXECUTION SANDBOX (In-browser using sql.js)

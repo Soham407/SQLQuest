@@ -15,6 +15,7 @@ interface AnimatedListProps {
   showGradients?: boolean;
   enableArrowNavigation?: boolean;
   displayScrollbar?: boolean;
+  maxHeight?: string;
 }
 
 const AnimatedList: React.FC<AnimatedListProps> = ({
@@ -23,6 +24,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   showGradients = true,
   enableArrowNavigation = true,
   displayScrollbar = true,
+  maxHeight = '24rem', // 384px default
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -49,7 +51,9 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
         case 'Enter':
         case ' ':
           e.preventDefault();
-          onItemSelect(items[selectedIndex], selectedIndex);
+          if (items[selectedIndex]) {
+            onItemSelect(items[selectedIndex], selectedIndex);
+          }
           break;
       }
     };
@@ -69,16 +73,16 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Beginner': return 'bg-success/20 text-success border-success/30';
-      case 'Intermediate': return 'bg-warning/20 text-warning border-warning/30';
-      case 'Advanced': return 'bg-destructive/20 text-destructive border-destructive/30';
-      default: return 'bg-muted text-muted-foreground';
+      case 'Beginner': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800';
+      case 'Intermediate': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800';
+      case 'Advanced': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getStatusIcon = (lesson: AnimatedLesson) => {
     if (lesson.isCompleted) {
-      return <CheckCircle className="w-5 h-5 text-success" />;
+      return <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />;
     }
     if (lesson.isLocked) {
       return <Lock className="w-5 h-5 text-muted-foreground" />;
@@ -86,8 +90,22 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
     return <Play className="w-5 h-5 text-primary" />;
   };
 
+  if (!items || items.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <Play className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">No lessons available</h3>
+          <p className="text-muted-foreground">Check back later for new content</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative">
+    <div className="animated-list-container relative px-8 mx-auto overflow-y-auto overflow-x-hidden  ">
       {showGradients && (
         <>
           <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
@@ -95,41 +113,41 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
         </>
       )}
       
-      <div
-        ref={listRef}
-        className={`space-y-3 max-h-96 overflow-y-hidden overflow-x-hidden ${
-          displayScrollbar ? 'scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent' : 'scrollbar-hide'
-        }`}
-        style={{
-          scrollbarWidth: displayScrollbar ? 'thin' : 'none',
-          msOverflowStyle: displayScrollbar ? 'auto' : 'none',
-        }}
-      >
+                           <div
+          ref={listRef}
+          className="space-y-3 overflow-y-auto overflow-x-visible scrollbar-hide"
+          style={{
+            maxHeight,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
         <AnimatePresence>
           {items.map((item, index) => (
-            <motion.div
-              key={item.id || index}
-              ref={(el) => (itemRefs.current[index] = el)}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              onClick={() => onItemSelect(item, index)}
-            >
+                         <motion.div
+               key={item.id || index}
+               ref={(el) => (itemRefs.current[index] = el)}
+               initial={{ opacity: 0, x: -20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: 20 }}
+               transition={{ delay: index * 0.05, duration: 0.3 }}
+               whileHover={{ scale: 1.01 }}
+               whileTap={{ scale: 0.99 }}
+               onMouseEnter={() => setHoveredIndex(index)}
+               onMouseLeave={() => setHoveredIndex(null)}
+               onClick={() => onItemSelect(item, index)}
+                               className="animated-list-card-container px-12 py-1"
+             >
               <Card
-                className={`cursor-pointer transition-all duration-200 ${
+                className={`animated-list-card cursor-pointer transition-all duration-200 border ${
                   selectedIndex === index
-                    ? 'ring-2 ring-primary bg-primary/5 border-primary/30'
+                    ? 'ring-2 ring-primary bg-primary/5 border-primary/30 shadow-md selected'
                     : hoveredIndex === index
-                    ? 'ring-1 ring-border bg-muted/30'
-                    : 'hover:bg-muted/20'
-                }`}
+                    ? 'ring-1 ring-border bg-muted/30 shadow-sm'
+                    : 'hover:bg-muted/20 hover:shadow-sm'
+                } ${item.isCompleted ? 'border-green-200 dark:border-green-800' : ''}`}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                   <div className="flex items-center justify-between min-w-0">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div className="flex-shrink-0">
@@ -137,30 +155,36 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2 min-w-0">
+                        <div className="flex items-center gap-3 mb-3 min-w-0">
                           <CardTitle className="text-lg font-semibold truncate min-w-0">
                             {item.title}
                           </CardTitle>
-                          <Badge variant="outline" className={getDifficultyColor(item.difficulty)}>
+                          <Badge variant="outline" className={`${getDifficultyColor(item.difficulty)} text-xs`}>
                             {item.difficulty}
                           </Badge>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                           {item.description}
                         </p>
                         
-                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>⏱️ {item.estimatedTime} min</span>
-                          <span>📊 {item.category}</span>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <span>⏱️</span>
+                            <span>{item.estimatedTime} min</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span>📊</span>
+                            <span>{item.category}</span>
+                          </span>
                           {item.isCompleted && (
-                            <span className="text-success">✅ Completed</span>
+                            <span className="text-green-600 dark:text-green-400 font-medium">✅ Completed</span>
                           )}
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                       <ChevronRight 
                         className={`w-5 h-5 transition-transform ${
                           selectedIndex === index ? 'text-primary' : 'text-muted-foreground'
@@ -175,8 +199,8 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
         </AnimatePresence>
       </div>
       
-      {enableArrowNavigation && (
-        <div className="mt-4 text-center">
+      {enableArrowNavigation && items.length > 0 && (
+        <div className="mt-6 mb-4 text-center">
           <p className="text-xs text-muted-foreground">
             Use ↑↓ arrows to navigate, Enter to select
           </p>
