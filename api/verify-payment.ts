@@ -10,6 +10,7 @@ interface MinimalResponse {
   json: (data: unknown) => void;
 }
 
+
 export default async function handler(req: MinimalRequest, res: MinimalResponse) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });

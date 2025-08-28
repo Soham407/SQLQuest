@@ -132,7 +132,7 @@ const Pricing = () => {
       const order = await createResp.json();
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: order.keyId, // Use the key from the API response
         amount: order.amount,
         currency: order.currency || "INR",
         name: "SQL Quest Interactive",

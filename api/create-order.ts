@@ -61,7 +61,10 @@ export default async function handler(req: MinimalRequest, res: MinimalResponse)
     }
 
     const order = await response.json();
-    res.status(200).json(order);
+    
+    // Also send the keyId to the frontend
+    res.status(200).json({ ...order, keyId });
+
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     res.status(500).json({ error: "Unexpected error creating order", details: message });
