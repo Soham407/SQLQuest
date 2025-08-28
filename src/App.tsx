@@ -16,6 +16,7 @@ import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "@/lib/auth";
 import { useAuth } from "@/lib/useAuth";
+import { AnimatedThemeToggler } from "@/components/magicui/animated-theme-toggler";
 
 const queryClient = new QueryClient();
 
@@ -146,6 +147,9 @@ const App = () => (
             <MainContent />
           </BrowserRouter>
         </AuthProvider>
+        <div className="fixed top-7 right-9 z-[1001]">
+          <AnimatedThemeToggler />
+        </div>
         <Toaster />
         <Sonner />
       </div>
