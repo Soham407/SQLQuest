@@ -74,6 +74,14 @@ export async function signup(email: string, password: string, name: string): Pro
   return account.create(ID.unique(), email, password, name);
 }
 
+// OAuth Providers
+export async function loginWithOAuth(provider: 'google' | 'github'): Promise<void> {
+  const successUrl = `${window.location.origin}/dashboard`;
+  const failureUrl = `${window.location.origin}/login`;
+  // This will redirect the browser to the provider and back
+  await account.createOAuth2Session(provider as unknown as any, successUrl, failureUrl);
+}
+
 export async function getCurrentUser(): Promise<any | null> {
   try {
     return await account.get();

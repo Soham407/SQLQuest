@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Database, Zap, Code } from 'lucide-react';
+import { Eye, EyeOff, Database, Zap, Code, Github, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { login } from '@/lib/api';
+import { login, loginWithOAuth } from '@/lib/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +16,14 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    try {
+      await loginWithOAuth(provider);
+    } catch (error) {
+      console.error('OAuth error:', error);
+      toast({ title: 'Social login failed', description: 'Please try again.', variant: 'destructive' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +118,32 @@ const Login = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuth('google')}
+                >
+                  <img src="/google.svg" alt="Google" className="w-4 h-4" />
+                  Continue with Google
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleOAuth('github')}
+                >
+                  <Github className="w-4 h-4" />
+                  Continue with GitHub
+                </Button>
+                <div className="flex items-center gap-2 py-1">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -155,7 +188,7 @@ const Login = () => {
                   className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 font-semibold"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? 'Signing in...' : 'Sign in with Email'}
                 </Button>
               </form>
               

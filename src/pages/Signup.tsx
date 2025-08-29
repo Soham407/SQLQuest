@@ -8,14 +8,35 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { signup, login } from '@/lib/api';
+import { Progress } from '@/components/ui/progress';
 
 const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [strength, setStrength] = useState(0);
+  const [strengthLabel, setStrengthLabel] = useState<'Weak' | 'Medium' | 'Strong' | ''>('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const evaluateStrength = (pwd: string) => {
+    let score = 0;
+    if (pwd.length >= 8) score += 1;
+    if (/[A-Z]/.test(pwd)) score += 1;
+    if (/[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+    const percent = Math.min(100, (score / 4) * 100);
+    setStrength(percent);
+    if (!pwd) setStrengthLabel('');
+    else if (percent < 40) setStrengthLabel('Weak');
+    else if (percent < 80) setStrengthLabel('Medium');
+    else setStrengthLabel('Strong');
+  };
+
+  const onPasswordChange = (value: string) => {
+    setPassword(value);
+    evaluateStrength(value);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,10 +158,26 @@ const Signup = () => {
                     type="password"
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => onPasswordChange(e.target.value)}
                     required
                     className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                   />
+                  <div className="space-y-1">
+                    <Progress value={strength} className={
+                      strengthLabel === 'Weak' ? 'bg-secondary [&>div]:bg-destructive' :
+                      strengthLabel === 'Medium' ? 'bg-secondary [&>div]:bg-yellow-500' :
+                      strengthLabel === 'Strong' ? 'bg-secondary [&>div]:bg-emerald-500' : ''
+                    } />
+                    {strengthLabel && (
+                      <p className={
+                        strengthLabel === 'Weak' ? 'text-xs text-destructive' :
+                        strengthLabel === 'Medium' ? 'text-xs text-yellow-600' :
+                        'text-xs text-emerald-600'
+                      }>
+                        {strengthLabel}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <Button
                   type="submit"
