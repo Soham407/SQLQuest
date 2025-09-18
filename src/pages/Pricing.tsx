@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Check, Star, Zap, Crown } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 // Razorpay response interface
 interface RazorpayResponse {
@@ -118,48 +119,51 @@ const Pricing = () => {
     }
 
     try {
-      const createResp = await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planName: plan.name })
+      // Call Supabase edge function to create Razorpay order
+      const { data: order, error: createError } = await supabase.functions.invoke('create-razorpay-order', {
+        body: { planName: plan.name }
       });
-      if (!createResp.ok) {
-        const errText = await createResp.text();
+
+      if (createError || !order) {
         toast.error("Failed to start payment. Try again.");
-        console.error("Create order failed:", errText);
+        console.error("Create order failed:", createError);
         return;
       }
-      const order = await createResp.json();
+
+      if (order.amount === 0) {
+        toast.success(order.message || "Free plan activated!");
+        return;
+      }
 
       const options = {
-        key: order.keyId, // Use the key from the API response
+        key: order.keyId,
         amount: order.amount,
         currency: order.currency || "INR",
         name: "SQL Quest Interactive",
         description: `${plan.name} Plan Subscription`,
-        image: "/favicon.ico",
+        image: "/SQL_LOGO.png",
         order_id: order.id,
         handler: async function (response: RazorpayResponse) {
           try {
-            const verifyResp = await fetch("/api/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
+            // Call Supabase edge function to verify payment
+            const { data: verifyResult, error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
+              body: {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature
-              })
+              }
             });
-            const verifyJson = await verifyResp.json();
-            if (verifyResp.ok && verifyJson.valid) {
-              toast.success("Payment successful! Welcome to " + plan.name + "!");
-            } else {
+
+            if (verifyError || !verifyResult?.valid) {
               toast.error("Payment verification failed");
-              console.error("Verification error:", verifyJson);
+              console.error("Verification error:", verifyError || verifyResult);
+              return;
             }
+
+            toast.success("Payment successful! Welcome to " + plan.name + "!");
           } catch (e) {
             toast.error("Could not verify payment");
-            console.error(e);
+            console.error("Payment verification error:", e);
           }
         },
         prefill: {
@@ -185,7 +189,7 @@ const Pricing = () => {
       rzp.open();
     } catch (e) {
       toast.error("Something went wrong. Please try again.");
-      console.error(e);
+      console.error("Payment error:", e);
     }
   };
 
