@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Client, Account, Databases, ID, Query } from 'appwrite';
+import { supabase } from '@/integrations/supabase/client';
 import sql from 'sql.js';
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-// --- INTERFACES (These should match your Appwrite Collection attributes) ---
+// --- INTERFACES ---
 export interface User {
   id: string;
   email: string;
@@ -13,16 +12,12 @@ export interface User {
 }
 
 export interface Lesson {
-  id: string; // Mapped from Appwrite's $id
+  id: string;
   title: string;
   description: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   category: string;
   content: string;
-  // Note: The following fields are for the future when you build the lesson seeder
-  // sqlSolution: string;
-  // expectedResult: QueryResult;
-  // hints: string[];
   estimatedTime: number;
 }
 
@@ -35,84 +30,83 @@ export interface QueryResult {
   error?: string;
 }
 
-// --- APPWRITE CLIENT INITIALIZATION ---
-const appwriteEndpoint = import.meta.env.VITE_APPWRITE_ENDPOINT as string;
-const appwriteProjectId = import.meta.env.VITE_APPWRITE_PROJECT_ID as string;
-
-const client = new Client()
-  .setEndpoint(appwriteEndpoint)
-  .setProject(appwriteProjectId);
-
-const account = new Account(client);
-const databases = new Databases(client);
-
-// --- DATABASE & COLLECTION IDs (Read from Vite env vars) ---
-const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID as string;
-const LESSONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID as string;
-
-// Validate required env vars at startup for clearer errors
-if (!appwriteEndpoint || !appwriteProjectId || !DATABASE_ID || !LESSONS_COLLECTION_ID) {
-  console.error('Missing required Appwrite env vars.', {
-    hasEndpoint: Boolean(appwriteEndpoint),
-    hasProjectId: Boolean(appwriteProjectId),
-    hasDatabaseId: Boolean(DATABASE_ID),
-    hasCollectionId: Boolean(LESSONS_COLLECTION_ID),
-  });
-  throw new Error('Missing required Appwrite environment variables. Check your Vite env.');
-}
-
 // --- API FUNCTIONS ---
 
 // AUTHENTICATION
 export async function login(email: string, password: string): Promise<any> {
-  await account.createEmailPasswordSession(email, password);
-  return account.get();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw error;
+  return data.user;
 }
 
 export async function signup(email: string, password: string, name: string): Promise<any> {
-  // Creates a new user account.
-  return account.create(ID.unique(), email, password, name);
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        display_name: name,
+      },
+    },
+  });
+  if (error) throw error;
+  return data.user;
 }
 
 // OAuth Providers
 export async function loginWithOAuth(provider: 'google' | 'github'): Promise<void> {
-  const successUrl = `${window.location.origin}/dashboard`;
-  const failureUrl = `${window.location.origin}/login`;
-  // This will redirect the browser to the provider and back
-  await account.createOAuth2Session(provider as unknown as any, successUrl, failureUrl);
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: provider as 'google' | 'github',
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`,
+    },
+  });
+  if (error) throw error;
 }
 
 export async function getCurrentUser(): Promise<any | null> {
-  try {
-    return await account.get();
-  } catch (error) {
-    console.error('No active session found.');
-    return null;
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
 }
 
 export async function logout() {
-  return account.deleteSession('current');
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 }
 
-// LESSONS
+// LESSONS (Placeholder - will need database tables)
 export async function getLessons(): Promise<Lesson[]> {
-  const response = await databases.listDocuments(
-    DATABASE_ID,
-    LESSONS_COLLECTION_ID
-  );
-  const docs = response.documents as unknown as any[];
-  return docs.map((d: any) => ({ id: d.$id, ...d }));
+  // TODO: Implement with Supabase when lessons table is created
+  return [
+    {
+      id: '1',
+      title: 'Introduction to SQL',
+      description: 'Learn the basics of SQL queries',
+      difficulty: 'Beginner' as const,
+      category: 'Fundamentals',
+      content: 'Welcome to SQL! In this lesson, you\'ll learn SELECT statements...',
+      estimatedTime: 30,
+    },
+    {
+      id: '2', 
+      title: 'Advanced Joins',
+      description: 'Master complex JOIN operations',
+      difficulty: 'Advanced' as const,
+      category: 'Advanced',
+      content: 'Learn about INNER, LEFT, RIGHT, and FULL OUTER JOINs...',
+      estimatedTime: 60,
+    },
+  ];
 }
 
 export async function getLessonById(id: string): Promise<Lesson> {
-  const response = await databases.getDocument(
-    DATABASE_ID,
-    LESSONS_COLLECTION_ID,
-    id
-  );
-  const d = response as unknown as any;
-  return { id: d.$id, ...d } as Lesson;
+  const lessons = await getLessons();
+  const lesson = lessons.find(l => l.id === id);
+  if (!lesson) throw new Error('Lesson not found');
+  return lesson;
 }
 
 // USER PROGRESS (temporary placeholder – replace with real backend logic later)
