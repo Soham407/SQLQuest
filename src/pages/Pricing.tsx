@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, Star, Zap, Crown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Check, Star, Zap, Crown, Globe, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/hooks/useCurrency";
+import { convertToSmallestUnit, SUPPORTED_CURRENCIES } from "@/lib/currency";
 
 // Razorpay response interface
 interface RazorpayResponse {
@@ -52,10 +55,20 @@ declare global {
 }
 
 const Pricing = () => {
+  const { 
+    currency, 
+    convertedPrices, 
+    loading: currencyLoading, 
+    error: currencyError,
+    formatPrice,
+    setCurrency 
+  } = useCurrency();
+
   const plans = [
     {
       name: "Free",
-      price: 0,
+      basePrice: 0,
+      price: convertedPrices.Free,
       description: "Perfect for getting started with SQL",
       icon: <Star className="h-6 w-6" />,
       features: [
@@ -66,11 +79,11 @@ const Pricing = () => {
       ],
       buttonText: "Get Started Free",
       popular: false,
-      razorpayAmount: 0
     },
     {
       name: "Pro",
-      price: "TBD",
+      basePrice: 9,
+      price: convertedPrices.Pro,
       description: "Advanced features for serious learners",
       icon: <Zap className="h-6 w-6" />,
       features: [
@@ -83,11 +96,11 @@ const Pricing = () => {
       ],
       buttonText: "Upgrade to Pro",
       popular: true,
-      razorpayAmount: 2999 // ₹29.99 (you can change this later)
     },
     {
       name: "Pro Plus",
-      price: "TBD",
+      basePrice: 39,
+      price: convertedPrices["Pro Plus"],
       description: "Complete SQL mastery with premium features",
       icon: <Crown className="h-6 w-6" />,
       features: [
@@ -101,7 +114,6 @@ const Pricing = () => {
       ],
       buttonText: "Go Pro Plus",
       popular: false,
-      razorpayAmount: 4999 // ₹49.99 (you can change this later)
     }
   ];
 
@@ -121,7 +133,11 @@ const Pricing = () => {
     try {
       // Call Supabase edge function to create Razorpay order
       const { data: order, error: createError } = await supabase.functions.invoke('create-razorpay-order', {
-        body: { planName: plan.name }
+        body: { 
+          planName: plan.name,
+          currency: currency,
+          amount: plan.price,
+        }
       });
 
       if (createError || !order) {
@@ -138,9 +154,9 @@ const Pricing = () => {
       const options = {
         key: order.keyId,
         amount: order.amount,
-        currency: order.currency || "INR",
+        currency: order.currency,
         name: "SQL Quest Interactive",
-        description: `${plan.name} Plan Subscription`,
+        description: `${plan.name} Plan Subscription - ${formatPrice(plan.price)}`,
         image: "/SQL_LOGO.png",
         order_id: order.id,
         handler: async function (response: RazorpayResponse) {
@@ -160,7 +176,7 @@ const Pricing = () => {
               return;
             }
 
-            toast.success("Payment successful! Welcome to " + plan.name + "!");
+            toast.success(`Payment successful! Welcome to ${plan.name}!`);
           } catch (e) {
             toast.error("Could not verify payment");
             console.error("Payment verification error:", e);
@@ -173,6 +189,9 @@ const Pricing = () => {
         },
         notes: {
           plan: plan.name,
+          currency: currency,
+          originalPrice: `$${plan.basePrice}`,
+          localPrice: formatPrice(plan.price),
           features: plan.features.join(", ")
         },
         theme: {
@@ -198,9 +217,39 @@ const Pricing = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">Choose Your SQL Journey</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
             Select the perfect plan to accelerate your SQL learning and advance your career
           </p>
+          
+          {/* Currency Selector */}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Globe className="h-5 w-5 text-muted-foreground" />
+            <Select value={currency} onValueChange={setCurrency} disabled={currencyLoading}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(SUPPORTED_CURRENCIES).map(([code, info]) => (
+                  <SelectItem key={code} value={code}>
+                    {info.symbol} {info.name} ({code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {currencyLoading && (
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading currency data...</span>
+            </div>
+          )}
+
+          {currencyError && (
+            <p className="text-destructive text-sm">
+              {currencyError}. Showing USD prices.
+            </p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -225,9 +274,16 @@ const Pricing = () => {
                 <CardDescription className="text-base">{plan.description}</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">
-                    {plan.price === 0 ? 'Free' : `₹${plan.price}`}
+                    {plan.price === 0 ? 'Free' : formatPrice(plan.price)}
                   </span>
-                  {plan.price !== 0 && <span className="text-muted-foreground">/month</span>}
+                  {plan.price !== 0 && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {plan.basePrice !== plan.price && currency !== 'USD' && (
+                        <span>≈ ${plan.basePrice} USD</span>
+                      )}
+                      <span className="block">/month</span>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
 
@@ -247,8 +303,16 @@ const Pricing = () => {
                   className="w-full" 
                   variant={plan.popular ? "default" : "outline"}
                   onClick={() => handlePayment(plan)}
+                  disabled={currencyLoading}
                 >
-                  {plan.buttonText}
+                  {currencyLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    plan.buttonText
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -269,9 +333,24 @@ const Pricing = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="font-semibold">Feature</TableHead>
-                    <TableHead className="text-center font-semibold">Free</TableHead>
-                    <TableHead className="text-center font-semibold">Pro</TableHead>
-                    <TableHead className="text-center font-semibold">Pro Plus</TableHead>
+                    <TableHead className="text-center font-semibold">
+                      Free<br />
+                      <span className="text-sm font-normal text-muted-foreground">
+                        {formatPrice(0)}
+                      </span>
+                    </TableHead>
+                    <TableHead className="text-center font-semibold">
+                      Pro<br />
+                      <span className="text-sm font-normal text-muted-foreground">
+                        {formatPrice(convertedPrices.Pro)}
+                      </span>
+                    </TableHead>
+                    <TableHead className="text-center font-semibold">
+                      Pro Plus<br />
+                      <span className="text-sm font-normal text-muted-foreground">
+                        {formatPrice(convertedPrices["Pro Plus"])}
+                      </span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -304,6 +383,9 @@ const Pricing = () => {
         <div className="mt-16 text-center">
           <p className="text-muted-foreground">
             All plans come with a 7-day money-back guarantee. No questions asked.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Prices shown in {SUPPORTED_CURRENCIES[currency]?.name || currency} • Real-time currency conversion
           </p>
         </div>
       </div>

@@ -6,11 +6,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PLAN_TO_AMOUNT_IN_PAISE: Record<string, number> = {
-  Free: 0,
-  Pro: 2999,
-  "Pro Plus": 4999,
+// Currency conversion utilities
+const SUPPORTED_CURRENCIES = {
+  USD: { smallestUnit: 100 }, // cents
+  INR: { smallestUnit: 100 }, // paisa
+  EUR: { smallestUnit: 100 }, // cents
+  GBP: { smallestUnit: 100 }, // pence
+  CAD: { smallestUnit: 100 }, // cents
+  AUD: { smallestUnit: 100 }, // cents
+  SGD: { smallestUnit: 100 }, // cents
+  JPY: { smallestUnit: 1 },   // no subdivision
 };
+
+function convertToSmallestUnit(amount: number, currency: string): number {
+  const currencyInfo = SUPPORTED_CURRENCIES[currency as keyof typeof SUPPORTED_CURRENCIES];
+  if (!currencyInfo) {
+    console.warn(`Unsupported currency: ${currency}, defaulting to cents`);
+    return Math.round(amount * 100);
+  }
+  return Math.round(amount * currencyInfo.smallestUnit);
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -26,10 +41,10 @@ serve(async (req) => {
   }
 
   try {
-    const { planName } = await req.json();
+    const { planName, currency = 'USD', amount } = await req.json();
     
-    if (!planName || !(planName in PLAN_TO_AMOUNT_IN_PAISE)) {
-      return new Response(JSON.stringify({ error: 'Invalid plan' }), {
+    if (!planName || typeof amount !== 'number') {
+      return new Response(JSON.stringify({ error: 'Missing required fields: planName and amount' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -46,20 +61,34 @@ serve(async (req) => {
       });
     }
 
-    const amount = PLAN_TO_AMOUNT_IN_PAISE[planName];
-
+    // Handle free plan
     if (amount === 0) {
-      // Free plan, no payment needed
       return new Response(JSON.stringify({ 
         success: true, 
         message: 'Free plan activated',
-        amount: 0 
+        amount: 0,
+        currency: currency
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Creating Razorpay order for plan: ${planName}, amount: ${amount}`);
+    // Convert amount to smallest unit for payment processor
+    const amountInSmallestUnit = convertToSmallestUnit(amount, currency);
+
+    console.log(`Creating Razorpay order for plan: ${planName}, amount: ${amount} ${currency} (${amountInSmallestUnit} smallest units)`);
+
+    // Validate currency support by Razorpay
+    const supportedRazorpayCurrencies = ['INR', 'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'SGD', 'JPY'];
+    if (!supportedRazorpayCurrencies.includes(currency)) {
+      return new Response(JSON.stringify({ 
+        error: 'Currency not supported by payment processor',
+        supportedCurrencies: supportedRazorpayCurrencies
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const auth = btoa(`${keyId}:${keySecret}`);
     const response = await fetch('https://api.razorpay.com/v1/orders', {
@@ -69,10 +98,15 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount,
-        currency: 'INR',
+        amount: amountInSmallestUnit,
+        currency: currency,
         receipt: `receipt_${Date.now()}`,
-        notes: { planName },
+        notes: { 
+          planName,
+          originalAmount: amount,
+          currency: currency,
+          convertedAmount: amountInSmallestUnit
+        },
       }),
     });
 
@@ -89,11 +123,13 @@ serve(async (req) => {
     }
 
     const order = await response.json();
-    console.log('Razorpay order created successfully:', order.id);
+    console.log('Razorpay order created successfully:', order.id, `Amount: ${amountInSmallestUnit} ${currency}`);
 
     return new Response(JSON.stringify({ 
       ...order, 
-      keyId 
+      keyId,
+      originalAmount: amount,
+      convertedAmount: amountInSmallestUnit
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
