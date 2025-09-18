@@ -140,20 +140,20 @@ const MainContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <div className="min-h-screen bg-background">
-        <AuthProvider>
-          <BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <TooltipProvider>
+          <div className="min-h-screen bg-background">
             <MainContent />
-          </BrowserRouter>
-        </AuthProvider>
-        <div className="fixed top-7 right-9 z-[1001]">
-          <AnimatedThemeToggler />
-        </div>
-        <Toaster />
-        <Sonner />
-      </div>
-    </TooltipProvider>
+            <div className="fixed top-7 right-9 z-[1001]">
+              <AnimatedThemeToggler />
+            </div>
+            <Toaster />
+            <Sonner />
+          </div>
+        </TooltipProvider>
+      </BrowserRouter>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
