@@ -5,18 +5,15 @@ import Editor from '@monaco-editor/react';
 import { 
   Play, 
   ArrowLeft, 
-  Clock, 
   CheckCircle, 
   AlertCircle, 
   Lightbulb,
   Database,
-  RotateCcw,
-  Keyboard
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { getLessonById, executeQuery, type Lesson, type QueryResult } from '@/lib/api';
 
@@ -41,8 +38,8 @@ const LessonPage = () => {
       try {
         const lessonData = await getLessonById(id);
         setLesson(lessonData);
-        // Set initial query with a comment
-        setSqlQuery('-- Write your SQL query here\n');
+        // Set initial query to match reference
+        setSqlQuery('-- Write your query here\nSELECT * \nFROM users;');
       } catch (error) {
         toast({
           title: "Error",
@@ -160,326 +157,250 @@ const LessonPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-3">
+      <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Dashboard
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
+            <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <Database className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <Database className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h1 className="font-semibold text-foreground">SQL Quest Interactive</h1>
-                </div>
+                <h1 className="text-xl font-bold text-white">SQL Quest</h1>
               </div>
+              <nav className="hidden md:flex items-center gap-6 text-sm">
+                <button className="text-slate-300 hover:text-white transition-colors">Challenges</button>
+                <button className="text-slate-300 hover:text-white transition-colors">Learn</button>
+                <button className="text-slate-300 hover:text-white transition-colors">Community</button>
+                <button className="text-slate-300 hover:text-white transition-colors">Leaderboard</button>
+              </nav>
             </div>
             
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
-                {lesson.difficulty}
-              </Badge>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                <span>{lesson.estimatedTime} min</span>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
+                🌙
+              </Button>
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
+                🔔
+              </Button>
+              <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center">
+                <User className="w-4 h-4" />
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-120px)]">
-          
-          {/* Left Panel - Lesson Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-1"
-          >
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="text-xl">{lesson.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">{lesson.description}</p>
-              </CardHeader>
-              <CardContent className="custom-scrollbar overflow-y-auto max-h-[calc(100vh-250px)]">
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: lesson.content.replace(/\n/g, '<br/>').replace(/```sql\n(.*?)\n```/gs, '<pre><code class="sql">$1</code></pre>')
-                  }} />
+      <div className="flex h-[calc(100vh-73px)]">
+        {/* Left Sidebar */}
+        <div className="w-96 bg-slate-800 border-r border-slate-700 flex flex-col">
+          {/* Challenge Section */}
+          <div className="p-6 border-b border-slate-700">
+            <h2 className="text-lg font-semibold text-white mb-3">
+              Challenge 1: {lesson.title}
+            </h2>
+            <div className="space-y-3 text-sm text-slate-300 leading-relaxed">
+              <p>{lesson.description}</p>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={getDifficultyColor(lesson.difficulty)}>
+                  {lesson.difficulty}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Database Schema Section */}
+          <div className="flex-1 p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Database Schema</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-white">Table:</span>
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                    users
+                  </Badge>
                 </div>
                 
-                {/* Hints Section */}
-                <div className="mt-6 pt-4 border-t border-border">
+                <div className="bg-slate-900 rounded-lg border border-slate-600 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-700/50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-slate-300 font-medium">Column</th>
+                        <th className="px-4 py-2 text-left text-slate-300 font-medium">Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-slate-600">
+                        <td className="px-4 py-2 text-slate-400">id</td>
+                        <td className="px-4 py-2 text-slate-300">INT PRIMARY KEY</td>
+                      </tr>
+                      <tr className="border-t border-slate-600">
+                        <td className="px-4 py-2 text-slate-400">name</td>
+                        <td className="px-4 py-2 text-slate-300">VARCHAR(255)</td>
+                      </tr>
+                      <tr className="border-t border-slate-600">
+                        <td className="px-4 py-2 text-slate-400">email</td>
+                        <td className="px-4 py-2 text-slate-300">VARCHAR(255)</td>
+                      </tr>
+                      <tr className="border-t border-slate-600">
+                        <td className="px-4 py-2 text-slate-400">created_at</td>
+                        <td className="px-4 py-2 text-slate-300">TIMESTAMP</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* SQL Editor */}
+          <div className="flex-1 bg-slate-900 border-b border-slate-700">
+            <div className="p-4 border-b border-slate-700 bg-slate-800/50">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">SQL Editor</h3>
+                <div className="flex items-center gap-3">
                   <Button
-                    variant="outline"
+                    variant="outline" 
+                    size="sm"
                     onClick={() => setShowHints(!showHints)}
-                    className="w-full flex items-center gap-2"
+                    className="bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600 hover:text-white"
                   >
-                    <Lightbulb className="w-4 h-4" />
-                    {showHints ? 'Hide Hints' : 'Show Hints'}
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    Hint
                   </Button>
-                  
-                  {showHints && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="mt-3 space-y-2"
-                    >
-                      <div className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
-                        <div className="flex items-start gap-2">
-                          <Lightbulb className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
-                          <span>Try using SELECT statements to query the sample tables: employees and departments</span>
-                        </div>
-                      </div>
-                      <div className="text-sm p-3 bg-muted/50 rounded-lg border border-border">
-                        <div className="flex items-start gap-2">
-                          <Lightbulb className="w-3 h-3 text-warning mt-0.5 flex-shrink-0" />
-                          <span>Use JOIN operations to combine data from multiple tables</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
+                  <Button
+                    onClick={handleRunQuery}
+                    disabled={isRunning}
+                    className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    {isRunning ? 'Running...' : 'Run Query'}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              </div>
+            </div>
+            
+            <div className="h-full">
+              <Editor
+                height="calc(100% - 65px)"
+                defaultLanguage="sql"
+                theme="vs-dark"
+                value={sqlQuery}
+                onChange={(value) => setSqlQuery(value || '')}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: 'on',
+                  roundedSelection: false,
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 2,
+                  wordWrap: 'on',
+                  padding: { top: 16, bottom: 16 }
+                }}
+              />
+            </div>
+          </div>
 
-          {/* Center Panel - SQL Editor */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-1"
-          >
-            <Card className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">SQL Editor</CardTitle>
+          {/* Results Section */}
+          <div className="h-80 bg-slate-800 border-t border-slate-700">
+            <div className="p-4 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Results</h3>
+                {queryResult?.success && (
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleReset}
-                      className="flex items-center gap-2"
-                    >
-                      <RotateCcw className="w-3 h-3" />
-                      Reset
-                    </Button>
-                    <motion.div
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.1 }}
-                    >
-                      <Button
-                        onClick={handleRunQuery}
-                        disabled={isRunning}
-                        className="flex items-center gap-2 bg-gradient-primary hover:opacity-90 relative group"
-                      >
-                        <Play className="w-3 h-3" />
-                        {isRunning ? 'Running...' : 'Run Query'}
-                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap flex items-center gap-1">
-                          <Keyboard className="w-3 h-3" />
-                          {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'} + Enter
-                        </div>
-                      </Button>
-                    </motion.div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 p-0">
-                <motion.div 
-                  className={`h-full border border-border rounded-lg overflow-hidden transition-all duration-300 ${
-                    showError ? 'border-destructive shadow-lg animate-shake' : ''
-                  }`}
-                  animate={showError ? { x: [-10, 10, -10, 10, 0] } : {}}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Editor
-                    height="100%"
-                    defaultLanguage="sql"
-                    theme="vs-dark"
-                    value={sqlQuery}
-                    onChange={(value) => setSqlQuery(value || '')}
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      lineNumbers: 'on',
-                      roundedSelection: false,
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      tabSize: 2,
-                      wordWrap: 'on',
-                      padding: { top: 16, bottom: 16 }
-                    }}
-                  />
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Right Panel - Results */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-1"
-          >
-            <motion.div
-              className={`h-full transition-all duration-500 ${
-                showSuccess ? 'ring-2 ring-success shadow-lg shadow-success/20' : ''
-              } ${
-                showError ? 'ring-2 ring-destructive shadow-lg shadow-destructive/20' : ''
-              }`}
-              animate={showSuccess ? { scale: [1, 1.01, 1] } : {}}
-              transition={{ duration: 0.4 }}
-            >
-              <Card className="h-full flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    Query Results
-                    <AnimatePresence>
-                      {queryResult?.success && (
-                        <motion.div
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: 180 }}
-                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                        >
-                          <CheckCircle className="w-4 h-4 text-success" />
-                        </motion.div>
-                      )}
-                      {queryResult?.success === false && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                        >
-                          <AlertCircle className="w-4 h-4 text-destructive" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardTitle>
-                {queryResult && (
-                  <div className="text-sm text-muted-foreground">
-                    {queryResult.success ? (
-                      <span>
-                        {queryResult.rowCount} rows • {queryResult.executionTime.toFixed(3)}s
-                      </span>
-                    ) : (
-                      <span className="text-destructive">Execution failed</span>
-                    )}
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-green-400">Correct! 25ms 4 rows</span>
                   </div>
                 )}
-              </CardHeader>
-                <CardContent className="flex-1 overflow-hidden">
-                  {!queryResult ? (
-                    <div className="h-full flex items-center justify-center text-muted-foreground">
-                      <motion.div 
-                        className="text-center space-y-3"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        <motion.div
-                          animate={{ rotate: [0, 5, -5, 0] }}
-                          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                        >
-                          <Database className="w-12 h-12 mx-auto opacity-50" />
-                        </motion.div>
-                        <div>
-                          <p className="font-medium">Ready to execute your query</p>
-                          <p className="text-sm text-muted-foreground/70 mt-1">
-                            Results will appear here after running
-                          </p>
-                          <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground/50">
-                            <Keyboard className="w-3 h-3" />
-                            <span>Press {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'} + Enter to run</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </div>
-                  ) : queryResult.success ? (
-                    <motion.div 
-                      className="h-full overflow-auto custom-scrollbar"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <table className="result-table">
-                        <thead>
-                          <tr>
-                            {queryResult.columns.map((column, index) => (
-                              <motion.th 
-                                key={index}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                              >
-                                {column}
-                              </motion.th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {queryResult.rows.map((row, rowIndex) => (
-                            <motion.tr 
-                              key={rowIndex}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: (rowIndex + queryResult.columns.length) * 0.02 }}
-                            >
-                              {row.map((cell, cellIndex) => (
-                                <td key={cellIndex}>{cell}</td>
-                              ))}
-                            </motion.tr>
+              </div>
+            </div>
+            
+            <div className="p-4 h-full overflow-auto">
+              {!queryResult ? (
+                <div className="h-full flex items-center justify-center text-slate-400">
+                  <p>Results will appear here after running your query</p>
+                </div>
+              ) : queryResult.success ? (
+                <div className="overflow-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-700/50">
+                      <tr>
+                        {queryResult.columns.map((column, index) => (
+                          <th key={index} className="px-4 py-2 text-left text-slate-300 font-medium border-b border-slate-600">
+                            {column}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {queryResult.rows?.map((row, rowIndex) => (
+                        <tr key={rowIndex} className="border-b border-slate-700">
+                          {queryResult.columns.map((column, colIndex) => (
+                            <td key={colIndex} className="px-4 py-2 text-slate-300">
+                              {row[colIndex]}
+                            </td>
                           ))}
-                        </tbody>
-                      </table>
-                    </motion.div>
-                  ) : (
-                    <motion.div 
-                      className="h-full flex items-center justify-center"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="text-center space-y-3 p-4">
-                        <motion.div
-                          animate={{ rotate: [0, -10, 10, 0] }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <AlertCircle className="w-10 h-10 mx-auto text-destructive" />
-                        </motion.div>
-                        <p className="text-sm font-medium text-destructive">Query Error</p>
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="text-xs text-muted-foreground bg-destructive/10 p-3 rounded border border-destructive/20 max-w-sm"
-                        >
-                          {queryResult.error}
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center space-y-2">
+                    <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
+                    <p className="text-red-400 font-medium">Query Failed</p>
+                    <p className="text-sm text-slate-400">{queryResult.error}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Hints Modal/Overlay */}
+      <AnimatePresence>
+        {showHints && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setShowHints(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-800 p-6 rounded-lg border border-slate-600 max-w-md mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Lightbulb className="w-5 h-5 text-yellow-400" />
+                <h3 className="text-lg font-semibold text-white">Hint</h3>
+              </div>
+              <div className="space-y-3 text-sm text-slate-300">
+                <p>• Use the SELECT statement to query data from tables</p>
+                <p>• The asterisk (*) selects all columns from a table</p>
+                <p>• Remember to specify the table name after FROM</p>
+              </div>
+              <Button 
+                onClick={() => setShowHints(false)}
+                className="mt-4 w-full bg-blue-500 hover:bg-blue-600"
+              >
+                Got it!
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
