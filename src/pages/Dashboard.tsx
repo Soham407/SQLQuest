@@ -61,10 +61,10 @@ const Dashboard = () => {
   }, [lessons]);
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner': return 'bg-success/20 text-success border-success/30';
-      case 'Intermediate': return 'bg-warning/20 text-warning border-warning/30';
-      case 'Advanced': return 'bg-destructive/20 text-destructive border-destructive/30';
+    switch (difficulty.toLowerCase()) {
+      case 'beginner': return 'bg-success/20 text-success border-success/30';
+      case 'intermediate': return 'bg-warning/20 text-warning border-warning/30';
+      case 'advanced': return 'bg-destructive/20 text-destructive border-destructive/30';
       default: return 'bg-muted text-muted-foreground';
     }
   };
