@@ -135,7 +135,12 @@ export async function getLessonById(id: string): Promise<Lesson> {
 // USER PROGRESS
 export async function getUserProgress(): Promise<{ completedLessons: string[]; totalScore: number }> {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('User not authenticated');
+  if (!user) {
+    return {
+      completedLessons: [],
+      totalScore: 0
+    };
+  }
 
   const { data: progress, error: progressError } = await supabase
     .from('user_progress')
