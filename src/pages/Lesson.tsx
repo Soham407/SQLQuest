@@ -9,13 +9,14 @@ import {
   AlertCircle, 
   Lightbulb,
   Database,
-  User
+  User,
+  ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { getLessonById, executeQuery, type Lesson, type QueryResult } from '@/lib/api';
+import { getLessonById, executeQuery, getNextLessonId, type Lesson, type QueryResult } from '@/lib/api';
 
 const LessonPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +31,7 @@ const LessonPage = () => {
   const [showHints, setShowHints] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [nextLessonId, setNextLessonId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadLesson = async () => {
@@ -40,6 +42,12 @@ const LessonPage = () => {
         setLesson(lessonData);
         // Set initial query to match available tables
         setSqlQuery('-- Write your query here\nSELECT * \nFROM employees;');
+        
+        // Get next lesson ID
+        if (lessonData.orderIndex !== undefined) {
+          const nextId = await getNextLessonId(lessonData.orderIndex);
+          setNextLessonId(nextId);
+        }
       } catch (error) {
         toast({
           title: "Error",
@@ -340,29 +348,43 @@ const LessonPage = () => {
                   <p>Results will appear here after running your query</p>
                 </div>
               ) : queryResult.success ? (
-                <div className="overflow-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        {queryResult.columns.map((column, index) => (
-                          <th key={index} className="px-4 py-2 text-left font-medium">
-                            {column}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {queryResult.rows?.map((row, rowIndex) => (
-                        <tr key={rowIndex} className="border-b">
-                          {queryResult.columns.map((column, colIndex) => (
-                            <td key={colIndex} className="px-4 py-2">
-                              {row[colIndex]}
-                            </td>
+                <div className="space-y-4">
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          {queryResult.columns.map((column, index) => (
+                            <th key={index} className="px-4 py-2 text-left font-medium">
+                              {column}
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {queryResult.rows?.map((row, rowIndex) => (
+                          <tr key={rowIndex} className="border-b">
+                            {queryResult.columns.map((column, colIndex) => (
+                              <td key={colIndex} className="px-4 py-2">
+                                {row[colIndex]}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {nextLessonId && (
+                    <div className="flex justify-end pt-2">
+                      <Button
+                        onClick={() => navigate(`/lessons/${nextLessonId}`)}
+                        className="bg-success hover:bg-success/90"
+                      >
+                        Next Lesson
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center">

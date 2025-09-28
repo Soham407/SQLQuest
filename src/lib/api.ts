@@ -132,6 +132,20 @@ export async function getLessonById(id: string): Promise<Lesson> {
   };
 }
 
+export async function getNextLessonId(currentLessonOrderIndex: number): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('lessons')
+    .select('id')
+    .eq('is_published', true)
+    .gt('order_index', currentLessonOrderIndex)
+    .order('order_index')
+    .limit(1)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') throw error;
+  return data?.id || null;
+}
+
 // USER PROGRESS
 export async function getUserProgress(): Promise<{ completedLessons: string[]; totalScore: number }> {
   const { data: { user } } = await supabase.auth.getUser();
