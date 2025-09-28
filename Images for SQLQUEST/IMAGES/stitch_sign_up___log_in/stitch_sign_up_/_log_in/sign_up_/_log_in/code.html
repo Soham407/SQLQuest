@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SQL Quest - Sign In / Sign Up</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+    :root {
+      --primary-color: #13a4ec;
+      --background-dark: #111827;
+      --background-light: #f3f4f6;
+      --card-dark: #1f2937;
+      --card-light: #ffffff;
+      --text-dark: #f9fafb;
+      --text-light: #111827;
+      --muted-text-dark: #9ca3af;
+      --muted-text-light: #6b7280;
+    }
+    .light {
+      --background: var(--background-light);
+      --card: var(--card-light);
+      --text: var(--text-light);
+      --muted-text: var(--muted-text-light);
+      --border-color: #e5e7eb;
+      --input-bg: #e5e7eb;
+      --input-placeholder: #9ca3af;
+    }
+    .dark {
+      --background: var(--background-dark);
+      --card: var(--card-dark);
+      --text: var(--text-dark);
+      --muted-text: var(--muted-text-dark);
+      --border-color: #374151;
+      --input-bg: #374151;
+      --input-placeholder: #9ca3af;
+    }
+  </style>
+</head>
+<body class="dark" style="font-family: 'Space Grotesk', sans-serif;">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-[var(--background)] transition-colors duration-300 p-4">
+<div class="absolute top-4 right-4">
+<button class="p-2 rounded-full text-[var(--muted-text)] hover:bg-gray-700/50" id="theme-toggle">
+<span class="material-symbols-outlined dark:hidden">dark_mode</span>
+<span class="material-symbols-outlined hidden dark:inline">light_mode</span>
+</button>
+</div>
+<div class="w-full max-w-md">
+<div class="flex items-center justify-center mb-8 gap-3 text-[var(--text)]">
+<svg class="h-8 w-8 text-[var(--primary-color)]" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+<h1 class="text-3xl font-bold">SQL Quest</h1>
+</div>
+<div class="bg-[var(--card)] p-8 rounded-xl shadow-2xl w-full">
+<div class="mb-6">
+<div class="flex border-b border-[var(--border-color)]">
+<button class="flex-1 py-3 text-center font-medium text-[var(--primary-color)] border-b-2 border-[var(--primary-color)] transition-colors duration-300">Sign Up</button>
+<button class="flex-1 py-3 text-center font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-300">Log In</button>
+</div>
+</div>
+<h2 class="text-2xl font-bold text-center text-[var(--text)] mb-2">Create Your Account</h2>
+<p class="text-[var(--muted-text)] text-center mb-8">Embark on your journey to master SQL!</p>
+<form class="space-y-6">
+<div>
+<label class="sr-only" for="email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-text)]">
+                mail
+              </span>
+<input class="form-input w-full rounded-md border-0 bg-[var(--input-bg)] py-3 pl-10 pr-4 text-[var(--text)] placeholder:text-[var(--input-placeholder)] focus:ring-2 focus:ring-inset focus:ring-[var(--primary-color)] transition" id="email" placeholder="Email" type="email"/>
+</div>
+</div>
+<div>
+<label class="sr-only" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-text)]">
+                lock
+              </span>
+<input class="form-input w-full rounded-md border-0 bg-[var(--input-bg)] py-3 pl-10 pr-4 text-[var(--text)] placeholder:text-[var(--input-placeholder)] focus:ring-2 focus:ring-inset focus:ring-[var(--primary-color)] transition" id="password" placeholder="Password" type="password"/>
+</div>
+</div>
+<button class="w-full bg-[var(--primary-color)] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition-opacity duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] focus:ring-offset-[var(--card)]" type="submit">
+            Sign Up
+          </button>
+<div class="text-center">
+<a class="text-sm text-[var(--muted-text)] hover:text-[var(--primary-color)] hover:underline transition-colors duration-300" href="#">
+              Already have an account? Log In
+            </a>
+</div>
+</form>
+</div>
+</div>
+</div>
+<script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark');
+        body.classList.toggle('light');
+    });
+    // Set initial theme based on user preference or default to dark
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches && !body.classList.contains('dark')) {
+      body.classList.add('light');
+      body.classList.remove('dark');
+    } else {
+       body.classList.add('dark');
+       body.classList.remove('light');
+    }
+  </script>
+
+</body></html>

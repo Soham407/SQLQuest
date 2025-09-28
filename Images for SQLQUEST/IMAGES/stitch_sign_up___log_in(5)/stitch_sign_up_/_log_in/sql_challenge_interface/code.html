@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SQL Quest - Challenge</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #0ea5e9;
+            --background-color: #020617;
+            --surface-color: #0f172a;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #1e293b;
+        }
+        .dark {
+            --background-color: #020617;
+            --surface-color: #0f172a;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #1e293b;
+        }
+        .light {
+            --background-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+        .sql-keyword {
+            color: #c084fc;
+        }
+        .sql-string {
+            color: #a3e635;
+        }
+        .sql-operator {
+            color: #7dd3fc;
+        }
+        .sql-comment {
+            color: #64748b;
+        }
+        .sql-punctuation {
+            color: #f8fafc;
+        }
+        .sql-function {
+            color: #fb7185;
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)] text-[var(--text-primary)]" style="font-family: 'Space Grotesk', 'Noto Sans', sans-serif;">
+<div class="flex flex-col min-h-screen">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-[var(--border-color)] px-6 py-4">
+<div class="flex items-center gap-3">
+<svg class="text-[var(--primary-color)] h-8 w-8" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+<h1 class="text-xl font-bold">SQL Quest</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6 text-sm font-medium text-[var(--text-secondary)]">
+<a class="hover:text-[var(--text-primary)] transition-colors" href="#">Challenges</a>
+<a class="hover:text-[var(--text-primary)] transition-colors" href="#">Learn</a>
+<a class="hover:text-[var(--text-primary)] transition-colors" href="#">Community</a>
+<a class="hover:text-[var(--text-primary)] transition-colors" href="#">Leaderboard</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                    dark_mode
+                </button>
+<button class="material-symbols-outlined text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                    notifications
+                </button>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuATb-5he7aF61zA2g7_ZisJQkscyx8oGyutwOoz0g0RhF2eUKB43_gL8UwSdo1jLF7VlU7_fM6TQBJ-6fVxv2FK6dMu7y-vOObogTBg_ip96k4fLOgbkvCux23gPjxNaEbf68jZnAXP_6Vy2ItoHVEGSierHV-rXchZtyVf3uah0Yi_tgJPM3fvGfQ5kfw928BRGjR7Iq1zimzcpjvUgO2d8IRL_OyeWWrakrIhYSlusgdYhLqTrHDYqV5XvXNXgd8I7LRAwxN-NbD5");'></div>
+</div>
+</header>
+<main class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 p-4 md:p-6">
+<div class="md:col-span-1 bg-[var(--surface-color)] rounded-lg p-6 flex flex-col gap-6 overflow-y-auto">
+<div>
+<h2 class="text-xl font-bold mb-2">Challenge 1: Select All Users</h2>
+<p class="text-[var(--text-secondary)] text-sm leading-relaxed">
+                        Write a SQL query to select all columns for all users from the `users` table. This is a basic query to get you started with SQL. Remember to use the <code class="bg-[var(--background-color)] px-1.5 py-0.5 rounded-md text-[var(--primary-color)]">SELECT</code> statement and the asterisk (<code class="bg-[var(--background-color)] px-1.5 py-0.5 rounded-md text-[var(--primary-color)]">*</code>) to select all columns.
+                    </p>
+</div>
+<div>
+<h3 class="text-lg font-bold mb-4">Database Schema</h3>
+<div class="space-y-4">
+<h4 class="font-semibold text-base">Table: <code class="bg-[var(--background-color)] px-1.5 py-0.5 rounded-md text-[var(--primary-color)]">users</code></h4>
+<div class="border border-[var(--border-color)] rounded-md">
+<div class="grid grid-cols-2 gap-4 p-3 border-b border-[var(--border-color)] bg-slate-900">
+<p class="text-sm font-semibold">Column</p>
+<p class="text-sm font-semibold">Type</p>
+</div>
+<div class="grid grid-cols-2 gap-4 p-3 border-b border-[var(--border-color)]">
+<p class="text-sm text-[var(--text-secondary)] font-mono">id</p>
+<p class="text-sm text-[var(--text-primary)] font-mono">INT PRIMARY KEY</p>
+</div>
+<div class="grid grid-cols-2 gap-4 p-3 border-b border-[var(--border-color)]">
+<p class="text-sm text-[var(--text-secondary)] font-mono">name</p>
+<p class="text-sm text-[var(--text-primary)] font-mono">VARCHAR(255)</p>
+</div>
+<div class="grid grid-cols-2 gap-4 p-3 border-b border-[var(--border-color)]">
+<p class="text-sm text-[var(--text-secondary)] font-mono">email</p>
+<p class="text-sm text-[var(--text-primary)] font-mono">VARCHAR(255)</p>
+</div>
+<div class="grid grid-cols-2 gap-4 p-3">
+<p class="text-sm text-[var(--text-secondary)] font-mono">created_at</p>
+<p class="text-sm text-[var(--text-primary)] font-mono">TIMESTAMP</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-2 flex flex-col gap-4">
+<div class="bg-[var(--surface-color)] rounded-lg p-6 flex-grow flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold">SQL Editor</h3>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 min-w-[84px] cursor-pointer justify-center rounded-md h-9 px-3 bg-[var(--primary-color)] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 transition-all">
+<span class="material-symbols-outlined text-base">play_arrow</span>
+<span class="truncate">Run Query</span>
+</button>
+<button class="flex items-center gap-2 min-w-[84px] cursor-pointer justify-center rounded-md h-9 px-3 bg-slate-700 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-opacity-80 transition-all">
+<span class="material-symbols-outlined text-base">lightbulb</span>
+<span class="truncate">Hint</span>
+</button>
+</div>
+</div>
+<div class="relative flex-grow">
+<div class="absolute inset-0 bg-[#010409] rounded-md p-4 font-mono text-sm leading-relaxed overflow-auto">
+<pre><code><span class="sql-comment">-- Write your query here</span>
+<span class="sql-keyword">SELECT</span> <span class="sql-operator">*</span>
+<span class="sql-keyword">FROM</span> users<span class="sql-punctuation">;</span>
+</code></pre>
+</div>
+</div>
+</div>
+<div class="bg-[var(--surface-color)] rounded-lg p-6 flex-grow flex flex-col h-96">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold">Results</h3>
+<div class="flex items-center gap-2 text-sm">
+<span class="text-green-400 flex items-center gap-1"><span class="material-symbols-outlined text-base">check_circle</span>Correct!</span>
+<span class="text-[var(--text-secondary)]">25ms</span>
+<span class="text-[var(--text-secondary)]">4 rows</span>
+</div>
+</div>
+<div class="flex-grow border border-[var(--border-color)] rounded-md overflow-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-slate-900">
+<tr>
+<th class="px-4 py-3 font-semibold" scope="col">id</th>
+<th class="px-4 py-3 font-semibold" scope="col">name</th>
+<th class="px-4 py-3 font-semibold" scope="col">email</th>
+<th class="px-4 py-3 font-semibold" scope="col">created_at</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-[var(--border-color)] hover:bg-slate-800">
+<td class="px-4 py-3 font-mono">1</td>
+<td class="px-4 py-3">Alice Johnson</td>
+<td class="px-4 py-3">alice@example.com</td>
+<td class="px-4 py-3 font-mono">2023-10-27 10:00:00</td>
+</tr>
+<tr class="border-b border-[var(--border-color)] hover:bg-slate-800">
+<td class="px-4 py-3 font-mono">2</td>
+<td class="px-4 py-3">Bob Smith</td>
+<td class="px-4 py-3">bob@example.com</td>
+<td class="px-4 py-3 font-mono">2023-10-27 10:05:00</td>
+</tr>
+<tr class="border-b border-[var(--border-color)] hover:bg-slate-800">
+<td class="px-4 py-3 font-mono">3</td>
+<td class="px-4 py-3">Charlie Brown</td>
+<td class="px-4 py-3">charlie@example.com</td>
+<td class="px-4 py-3 font-mono">2023-10-27 10:10:00</td>
+</tr>
+<tr class="hover:bg-slate-800">
+<td class="px-4 py-3 font-mono">4</td>
+<td class="px-4 py-3">Diana Prince</td>
+<td class="px-4 py-3">diana@example.com</td>
+<td class="px-4 py-3 font-mono">2023-10-27 10:15:00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

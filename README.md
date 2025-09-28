@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+# SQL Quest Interactive
 
-## Project info
+SQL Quest Interactive is a modern, engaging web application designed to help users master SQL through hands-on practice, structured lessons, and real-time feedback. Start your journey from a beginner to a SQL expert today\!
 
-**URL**: https://lovable.dev/projects/a7b1cfac-5724-4c91-9997-727939da6321
+## ✨ Key Features
 
-## How can I edit this code?
+  - **Interactive SQL Sandbox**: Write and execute SQL queries directly in the browser against a sample database and see instant results.
+  - **Progressive Learning Path**: Follow a structured curriculum with lessons organized by difficulty (Beginner, Intermediate, Advanced) and category.
+  - **User Authentication**: Secure sign-up and login with email/password, as well as OAuth providers like Google and GitHub.
+  - **Gamified Progress Tracking**: Stay motivated by tracking completed lessons, scores, and earning achievement badges on your user profile.
+  - **Subscription Tiers**: Offers Free, Pro, and Pro Plus plans with varying levels of access to features.
+  - **International Payments**: Integrated with Razorpay to handle subscriptions, including dynamic currency conversion.
+  - **Modern UI/UX**: A beautiful, responsive interface built with Tailwind CSS and shadcn/ui, featuring smooth page transitions and an animated dark/light mode toggle.
 
-There are several ways of editing your application.
+## 🛠️ Tech Stack
 
-**Use Lovable**
+  - **Frontend**: React, Vite, TypeScript
+  - **UI Components**: shadcn/ui
+  - **Styling**: Tailwind CSS
+  - **Animations**: Framer Motion
+  - **Backend-as-a-Service**: Supabase (Auth, Postgres Database, Edge Functions)
+  - **In-Browser Database**: sql.js
+  - **Payment Gateway**: Razorpay
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a7b1cfac-5724-4c91-9997-727939da6321) and start prompting.
+## 🚀 Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+To get a local copy up and running, follow these simple steps.
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+  - Node.js (v18 or higher recommended)
+  - npm or bun
+  - A Supabase account
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation & Setup
 
-Follow these steps:
+1.  **Clone the repository:**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+    ```sh
+    git clone <YOUR_REPOSITORY_URL>
+    cd sqlquest
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  **Install dependencies:**
 
-# Step 3: Install the necessary dependencies.
-npm i
+    ```sh
+    npm install
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+3.  **Set up environment variables:**
+    Create a `.env` file in the root of the project by copying the example:
 
-**Edit a file directly in GitHub**
+    ```sh
+    cp .env.example .env
+    ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+    Populate the `.env` file with your Supabase project URL and Anon Key. You can find these in your Supabase project's API settings.
 
-**Use GitHub Codespaces**
+    ```env
+    VITE_SUPABASE_URL="YOUR_SUPABASE_URL"
+    VITE_SUPABASE_PUBLISHABLE_KEY="YOUR_SUPABASE_ANON_KEY"
+    ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+4.  **Set up the Supabase database:**
 
-## What technologies are used for this project?
+      * Create a new project on [Supabase](https://supabase.com/).
+      * Go to the SQL Editor in your Supabase project.
+      * Copy the content from the migration files located in the `supabase/migrations/` directory and run it to create the necessary tables, policies, and functions.
 
-This project is built with:
+5.  **Run the development server:**
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+    ```sh
+    npm run dev
+    ```
 
-## How can I deploy this project?
+    The application should now be running on `http://localhost:8080`.
 
-Simply open [Lovable](https://lovable.dev/projects/a7b1cfac-5724-4c91-9997-727939da6321) and click on Share -> Publish.
+## 部署
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is configured for easy deployment on Vercel. Simply connect your Git repository to Vercel and it will be deployed automatically. A `vercel.json` file is included to handle routing for client-side navigation.
