@@ -375,10 +375,11 @@ const LessonPage = () => {
                   </div>
                   
                   {nextLessonId && (
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-4">
                       <Button
                         onClick={() => navigate(`/lessons/${nextLessonId}`)}
-                        className="bg-success hover:bg-success/90"
+                        className="bg-success hover:bg-success/90 relative z-10 pointer-events-auto"
+                        size="default"
                       >
                         Next Lesson
                         <ArrowRight className="w-4 h-4 ml-2" />
