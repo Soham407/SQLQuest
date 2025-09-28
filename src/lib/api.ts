@@ -15,10 +15,14 @@ export interface Lesson {
   id: string;
   title: string;
   description: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
   category: string;
   content: string;
   estimatedTime: number;
+  hints?: string[];
+  expectedResult?: any;
+  orderIndex?: number;
+  isPublished?: boolean;
 }
 
 export interface QueryResult {
@@ -77,44 +81,99 @@ export async function logout() {
   if (error) throw error;
 }
 
-// LESSONS (Placeholder - will need database tables)
+// LESSONS
 export async function getLessons(): Promise<Lesson[]> {
-  // TODO: Implement with Supabase when lessons table is created
-  return [
-    {
-      id: '1',
-      title: 'Introduction to SQL',
-      description: 'Learn the basics of SQL queries',
-      difficulty: 'Beginner' as const,
-      category: 'Fundamentals',
-      content: 'Welcome to SQL! In this lesson, you\'ll learn SELECT statements...',
-      estimatedTime: 30,
-    },
-    {
-      id: '2', 
-      title: 'Advanced Joins',
-      description: 'Master complex JOIN operations',
-      difficulty: 'Advanced' as const,
-      category: 'Advanced',
-      content: 'Learn about INNER, LEFT, RIGHT, and FULL OUTER JOINs...',
-      estimatedTime: 60,
-    },
-  ];
+  const { data, error } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('is_published', true)
+    .order('order_index');
+  
+  if (error) throw error;
+  
+  return data?.map(lesson => ({
+    id: lesson.id,
+    title: lesson.title,
+    description: lesson.description || '',
+    difficulty: lesson.difficulty as 'beginner' | 'intermediate' | 'advanced',
+    category: lesson.category,
+    content: lesson.content,
+    estimatedTime: lesson.estimated_time,
+    hints: lesson.hints,
+    expectedResult: lesson.expected_result,
+    orderIndex: lesson.order_index,
+    isPublished: lesson.is_published
+  })) || [];
 }
 
 export async function getLessonById(id: string): Promise<Lesson> {
-  const lessons = await getLessons();
-  const lesson = lessons.find(l => l.id === id);
-  if (!lesson) throw new Error('Lesson not found');
-  return lesson;
+  const { data, error } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('id', id)
+    .eq('is_published', true)
+    .single();
+  
+  if (error) throw error;
+  if (!data) throw new Error('Lesson not found');
+  
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description || '',
+    difficulty: data.difficulty as 'beginner' | 'intermediate' | 'advanced',
+    category: data.category,
+    content: data.content,
+    estimatedTime: data.estimated_time,
+    hints: data.hints,
+    expectedResult: data.expected_result,
+    orderIndex: data.order_index,
+    isPublished: data.is_published
+  };
 }
 
-// USER PROGRESS (temporary placeholder – replace with real backend logic later)
+export async function getNextLessonId(currentLessonOrderIndex: number): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('lessons')
+    .select('id')
+    .eq('is_published', true)
+    .gt('order_index', currentLessonOrderIndex)
+    .order('order_index')
+    .limit(1)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') throw error;
+  return data?.id || null;
+}
+
+// USER PROGRESS
 export async function getUserProgress(): Promise<{ completedLessons: string[]; totalScore: number }> {
-  // Temporary sample data - replace with real backend integration later
-  return { 
-    completedLessons: ['1', '2'], // Sample completed lesson IDs
-    totalScore: 850 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return {
+      completedLessons: [],
+      totalScore: 0
+    };
+  }
+
+  const { data: progress, error: progressError } = await supabase
+    .from('user_progress')
+    .select('total_score')
+    .eq('user_id', user.id)
+    .single();
+
+  const { data: completions, error: completionsError } = await supabase
+    .from('lesson_completions')
+    .select('lesson_id')
+    .eq('user_id', user.id)
+    .eq('is_correct', true);
+
+  if (progressError && progressError.code !== 'PGRST116') throw progressError;
+  if (completionsError) throw completionsError;
+
+  return {
+    completedLessons: completions?.map(c => c.lesson_id) || [],
+    totalScore: progress?.total_score || 0
   };
 }
 

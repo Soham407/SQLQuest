@@ -61,19 +61,18 @@ const Dashboard = () => {
   }, [lessons]);
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner': return 'bg-success/20 text-success border-success/30';
-      case 'Intermediate': return 'bg-warning/20 text-warning border-warning/30';
-      case 'Advanced': return 'bg-destructive/20 text-destructive border-destructive/30';
+    switch (difficulty.toLowerCase()) {
+      case 'beginner': return 'bg-success/20 text-success border-success/30';
+      case 'intermediate': return 'bg-warning/20 text-warning border-warning/30';
+      case 'advanced': return 'bg-destructive/20 text-destructive border-destructive/30';
       default: return 'bg-muted text-muted-foreground';
     }
   };
 
   const getGridCols = (layout: string) => {
     switch (layout) {
-      case 'grid-4': return 'lg:grid-cols-4';
-      case 'grid-6': return 'lg:grid-cols-6';
       case 'list': return 'grid-cols-1';
+      case 'grid': return 'lg:grid-cols-3';
       default: return 'lg:grid-cols-3';
     }
   };
@@ -282,16 +281,10 @@ const Dashboard = () => {
                       List View
                     </div>
                   </SelectItem>
-                  <SelectItem value="grid-4">
-                    <div className="flex items-center gap-2">
-                      <Grid2X2 className="w-4 h-4" />
-                      4-Grid View
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="grid-6">
+                  <SelectItem value="grid">
                     <div className="flex items-center gap-2">
                       <Grid3X3 className="w-4 h-4" />
-                      6-Grid View
+                      Grid View
                     </div>
                   </SelectItem>
                 </SelectContent>

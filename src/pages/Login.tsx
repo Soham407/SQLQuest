@@ -8,70 +8,82 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { login, loginWithOAuth } from '@/lib/api';
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const handleOAuth = async (provider: 'google' | 'github') => {
     try {
       await loginWithOAuth(provider);
     } catch (error) {
       console.error('OAuth error:', error);
-      toast({ title: 'Social login failed', description: 'Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Social login failed',
+        description: 'Please try again.',
+        variant: 'destructive'
+      });
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const user = await login(email, password);
       toast({
         title: "Welcome back!",
-        description: `Hello ${user.name}, ready to master SQL?`,
+        description: `Hello ${user.name}, ready to master SQL?`
       });
       navigate('/dashboard');
     } catch (error: unknown) {
       let errMsg = 'Please check your credentials and try again.';
       if (error instanceof Error) {
         errMsg = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
-        errMsg = (error as { message: string }).message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error && typeof (error as {
+        message?: unknown;
+      }).message === 'string') {
+        errMsg = (error as {
+          message: string;
+        }).message;
       }
       console.error('Login error:', error);
       toast({
         title: "Login failed",
         description: errMsg,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         
         {/* Left side - Branding */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="hidden lg:block space-y-8"
-        >
+        <motion.div initial={{
+        opacity: 0,
+        x: -50
+      }} animate={{
+        opacity: 1,
+        x: 0
+      }} transition={{
+        duration: 0.6
+      }} className="hidden lg:block space-y-8">
           <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="flex items-center gap-3"
-            >
+            <motion.div initial={{
+            opacity: 0,
+            y: 20
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: 0.2,
+            duration: 0.6
+          }} className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                 <Database className="w-6 h-6 text-white" />
               </div>
@@ -81,12 +93,16 @@ const Login = () => {
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="space-y-4"
-            >
+            <motion.div initial={{
+            opacity: 0,
+            y: 20
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: 0.4,
+            duration: 0.6
+          }} className="space-y-4">
               <div className="flex items-center gap-3 text-foreground">
                 <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
                   <Code className="w-4 h-4 text-primary" />
@@ -104,12 +120,15 @@ const Login = () => {
         </motion.div>
 
         {/* Right side - Login form */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-md mx-auto"
-        >
+        <motion.div initial={{
+        opacity: 0,
+        x: 50
+      }} animate={{
+        opacity: 1,
+        x: 0
+      }} transition={{
+        duration: 0.6
+      }} className="w-full max-w-md mx-auto">
           <Card className="shadow-xl border-border bg-card/80 backdrop-blur-sm">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
@@ -119,21 +138,11 @@ const Login = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleOAuth('google')}
-                >
+                <Button type="button" variant="outline" className="w-full" onClick={() => handleOAuth('google')}>
                   <img src="/google.svg" alt="Google" className="w-4 h-4" />
                   Continue with Google
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleOAuth('github')}
-                >
+                <Button type="button" variant="outline" className="w-full" onClick={() => handleOAuth('github')}>
                   <Github className="w-4 h-4" />
                   Continue with GitHub
                 </Button>
@@ -146,54 +155,24 @@ const Login = () => {
               <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                  />
+                  <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required className="transition-all duration-200 focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-muted-foreground" />
-                      )}
+                    <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required className="pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20" />
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
                     </Button>
                   </div>
                 </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 font-semibold"
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 font-semibold" disabled={isLoading}>
                   {isLoading ? 'Signing in...' : 'Sign in with Email'}
                 </Button>
               </form>
               
               <div className="mt-6 text-center text-sm text-muted-foreground">
-                <p>Demo credentials: any email and password will work</p>
+                
                 <p className="mt-2">
                   Don&apos;t have an account?{' '}
                   <a href="/signup" className="text-primary font-semibold hover:underline">Sign up</a>
@@ -203,8 +182,6 @@ const Login = () => {
           </Card>
         </motion.div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;
