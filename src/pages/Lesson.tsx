@@ -38,8 +38,8 @@ const LessonPage = () => {
       try {
         const lessonData = await getLessonById(id);
         setLesson(lessonData);
-        // Set initial query to match reference
-        setSqlQuery('-- Write your query here\nSELECT * \nFROM users;');
+        // Set initial query to match available tables
+        setSqlQuery('-- Write your query here\nSELECT * \nFROM employees;');
       } catch (error) {
         toast({
           title: "Error",
@@ -196,7 +196,7 @@ const LessonPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm font-medium">Table:</span>
-                  <Badge variant="secondary">users</Badge>
+                  <Badge variant="secondary">employees</Badge>
                 </div>
                 
                 <Card>
@@ -211,19 +211,53 @@ const LessonPage = () => {
                       <tbody>
                         <tr className="border-b">
                           <td className="px-4 py-2 text-muted-foreground">id</td>
-                          <td className="px-4 py-2">INT PRIMARY KEY</td>
+                          <td className="px-4 py-2">INT</td>
                         </tr>
                         <tr className="border-b">
-                          <td className="px-4 py-2 text-muted-foreground">name</td>
-                          <td className="px-4 py-2">VARCHAR(255)</td>
+                          <td className="px-4 py-2 text-muted-foreground">first_name</td>
+                          <td className="px-4 py-2">VARCHAR</td>
                         </tr>
                         <tr className="border-b">
-                          <td className="px-4 py-2 text-muted-foreground">email</td>
-                          <td className="px-4 py-2">VARCHAR(255)</td>
+                          <td className="px-4 py-2 text-muted-foreground">last_name</td>
+                          <td className="px-4 py-2">VARCHAR</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="px-4 py-2 text-muted-foreground">salary</td>
+                          <td className="px-4 py-2">REAL</td>
                         </tr>
                         <tr>
-                          <td className="px-4 py-2 text-muted-foreground">created_at</td>
-                          <td className="px-4 py-2">TIMESTAMP</td>
+                          <td className="px-4 py-2 text-muted-foreground">department_id</td>
+                          <td className="px-4 py-2">INT</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium">Table:</span>
+                  <Badge variant="secondary">departments</Badge>
+                </div>
+                
+                <Card>
+                  <CardContent className="p-0">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="px-4 py-2 text-left font-medium">Column</th>
+                          <th className="px-4 py-2 text-left font-medium">Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="px-4 py-2 text-muted-foreground">id</td>
+                          <td className="px-4 py-2">INT</td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 text-muted-foreground">name</td>
+                          <td className="px-4 py-2">VARCHAR</td>
                         </tr>
                       </tbody>
                     </table>
