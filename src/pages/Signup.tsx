@@ -14,6 +14,7 @@ const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [strength, setStrength] = useState(0);
   const [strengthLabel, setStrengthLabel] = useState<'Weak' | 'Medium' | 'Strong' | ''>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +41,17 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      toast({
+        title: 'Password mismatch',
+        description: 'Passwords do not match. Please check and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       // 1. Create the account
@@ -178,6 +190,18 @@ const Signup = () => {
                       </p>
                     )}
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  />
                 </div>
                 <Button
                   type="submit"
